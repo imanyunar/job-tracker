@@ -1,4 +1,4 @@
-# Root & Environment
+# Environments & Logs
 *.log
 .DS_Store
 .env
@@ -9,6 +9,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.tsbuildinfo
 
 # IDEs
 /.fleet
@@ -18,38 +19,20 @@ Thumbs.db
 /.vscode
 /.zed
 
-# Backend specific (Laravel)
-/backend/.env
-/backend/.env.backup
-/backend/.env.production
-/backend/vendor/
-/backend/node_modules/
-/backend/public/build
-/backend/public/hot
-/backend/public/storage
-/backend/storage/*.key
-/backend/storage/pail
-/backend/storage/framework/cache/data/*
-/backend/storage/framework/sessions/*
-/backend/storage/framework/views/*
-/backend/storage/logs/*.log
-/backend/.phpunit.cache
-/backend/auth.json
-
-# Frontend specific (Vue / Vite)
-/frontend/node_modules/
-/frontend/dist/
-/frontend/dist-ssr/
-/frontend/*.local
-/frontend/.env.local
-/frontend/.env.*.local
-/frontend/*.tsbuildinfo
-*.tsbuildinfo
-/frontend/npm-debug.log*
-/frontend/yarn-debug.log*
-/frontend/yarn-error.log*
-/frontend/pnpm-debug.log*
-
-# General
-node_modules/
-vendor/
+# Dependencies & Build Artifacts (any depth)
+**/node_modules/
+**/vendor/
+**/dist/
+**/dist-ssr/
+**/.env
+**/.env.backup
+**/.env.production
+**/storage/logs/*.log
+**/storage/framework/cache/data/*
+**/storage/framework/sessions/*
+**/storage/framework/views/*
+**/storage/*.key
+**/public/storage
+**/public/build
+**/public/hot
+**/auth.json
