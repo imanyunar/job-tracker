@@ -142,42 +142,48 @@ Tabel **`job_applications`**:
 
 Ikuti langkah-langkah di bawah untuk menjalankan project di environment lokal Anda:
 
-### 1. Clone & Setup Backend (Laravel)
+### 1. Jalankan Database MySQL (Docker)
+
+Di root folder proyek:
 
 ```bash
-# Clone repository
-git clone <repo-url>
-cd job-tracker
+docker compose up -d
+```
 
-# Install PHP dependencies
+### 2. Setup & Jalankan Backend (Laravel 11)
+
+```bash
+cd backend
+
+# Install dependencies & generate key (jika belum)
 composer install
-
-# Konfigurasi file environment
 cp .env.example .env
 php artisan key:generate
 
-# Jalankan migrasi dan isi data dummy realistis
+# Jalankan migrasi dan data dummy
 php artisan migrate --seed
-```
 
-### 2. Setup Frontend (Vue 3 + TypeScript)
-
-```bash
-# Install Node.js dependencies
-npm install
-
-# Jalankan development server frontend (Vite)
-npm run dev
-```
-
-### 3. Jalankan Server Backend
-
-```bash
-# Di terminal terpisah, jalankan server API Laravel
+# Jalankan server API backend
 php artisan serve
 ```
 
-Buka browser Anda di **`http://localhost:8000`** atau **`http://localhost:5173`**.
+Server API berjalan di **`http://localhost:8000`**.
+
+### 3. Setup & Jalankan Frontend (Vue 3 + TypeScript 5)
+
+Di terminal terpisah:
+
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Jalankan server Vite
+npm run dev
+```
+
+Buka aplikasi di browser: **`http://localhost:5173`**.
 
 ---
 
