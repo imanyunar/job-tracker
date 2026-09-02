@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponse;
+use GuzzleHttp\Client;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,10 +84,18 @@ class AuthController extends Controller
     public function linkedinRedirect(): RedirectResponse|JsonResponse
     {
         try {
-            return Socialite::driver('linkedin-openid')
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('linkedin-openid')
                 ->stateless()
-                ->scopes(['openid', 'profile', 'email'])
-                ->redirect();
+                ->scopes(['openid', 'profile', 'email']);
+
+            if (app()->environment('local')) {
+                $driver->setHttpClient(new Client([
+                    'verify' => false,
+                ]));
+            }
+
+            return $driver->redirect();
         } catch (Throwable $e) {
             return $this->errorResponse('Gagal menginisiasi login LinkedIn: ' . $e->getMessage(), 500);
         }
@@ -100,10 +109,19 @@ class AuthController extends Controller
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
 
         try {
+            /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+            $driver = Socialite::driver('linkedin-openid')
+                ->stateless();
+
+            // Disable SSL verify on local environment to bypass Windows cURL CA certificate limitation
+            if (app()->environment('local')) {
+                $driver->setHttpClient(new Client([
+                    'verify' => false,
+                ]));
+            }
+
             /** @var \Laravel\Socialite\Two\User $linkedinUser */
-            $linkedinUser = Socialite::driver('linkedin-openid')
-                ->stateless()
-                ->user();
+            $linkedinUser = $driver->user();
 
             $email = $linkedinUser->getEmail();
             $name = $linkedinUser->getName() ?: ($linkedinUser->getNickname() ?: 'LinkedIn User');

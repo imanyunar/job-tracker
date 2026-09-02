@@ -39,6 +39,9 @@ return [
         'client_id' => env('LINKEDIN_CLIENT_ID'),
         'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
         'redirect' => env('LINKEDIN_REDIRECT_URI', 'http://localhost:8000/api/auth/linkedin/callback'),
+        'guzzle' => [
+            'verify' => env('APP_ENV') === 'production',
+        ],
     ],
 
 ];
