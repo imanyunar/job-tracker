@@ -136,7 +136,7 @@
         </div>
         <div class="flex items-center gap-2.5">
           <button
-            @click="$emit('edit-job', job)"
+            @click="$emit('edit', job)"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1C2B2A] bg-[#ECEEEA] hover:bg-[#E4E8E3] border border-[#C8D0CC] rounded transition-colors cursor-pointer"
           >
             <svg class="w-3.5 h-3.5 text-[#5B6863]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@
           </button>
 
           <button
-            @click="$emit('delete-job', job)"
+            @click="$emit('delete', job)"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#8B5A5A] bg-[#F8EFEF] hover:bg-[#F2DFDF] border border-[#8B5A5A]/30 rounded transition-colors cursor-pointer"
           >
             <svg class="w-3.5 h-3.5 text-[#8B5A5A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,18 +165,20 @@ import type { JobApplication, JobStatus } from '../types/job';
 
 const props = defineProps<{
   job: JobApplication | null;
+  loading?: boolean;
   submitting?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'change-status', id: number, status: JobStatus): void;
-  (e: 'edit-job', job: JobApplication): void;
-  (e: 'delete-job', job: JobApplication): void;
+  (e: 'status-change', payload: { id: number; status: JobStatus }): void;
+  (e: 'edit', job: JobApplication): void;
+  (e: 'delete', job: JobApplication): void;
+  (e: 'open-create'): void;
 }>();
 
 const onStatusChange = (newStatus: JobStatus) => {
   if (props.job && props.job.status !== newStatus) {
-    emit('change-status', props.job.id, newStatus);
+    emit('status-change', { id: props.job.id, status: newStatus });
   }
 };
 
