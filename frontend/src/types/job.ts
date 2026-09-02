@@ -4,7 +4,16 @@ export interface User {
   id: number;
   name: string;
   email: string;
+  role: 'user' | 'admin';
+  headline?: string | null;
+  phone?: string | null;
+  target_salary_min?: number | null;
+  target_salary_max?: number | null;
+  preferred_location?: string | null;
+  linkedin_id?: string | null;
+  avatar?: string | null;
   created_at?: string;
+  job_applications_count?: number;
 }
 
 export interface AuthResponseData {
@@ -24,9 +33,29 @@ export interface RegisterPayload {
   password_confirmation: string;
 }
 
+export interface ProfileUpdatePayload {
+  name: string;
+  headline?: string | null;
+  phone?: string | null;
+  target_salary_min?: number | null;
+  target_salary_max?: number | null;
+  preferred_location?: string | null;
+}
+
+export interface ChangePasswordPayload {
+  current_password?: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export interface JobApplication {
   id: number;
   user_id?: number | null;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  } | null;
   company_name: string;
   position: string;
   status: JobStatus;
@@ -58,6 +87,22 @@ export interface JobStats {
   total: number;
   active_in_process: number;
   positive_rate_percent: number;
+  by_status: {
+    applied: number;
+    screening: number;
+    interview: number;
+    offer: number;
+    rejected: number;
+    accepted: number;
+  };
+}
+
+export interface AdminStats {
+  total_users: number;
+  total_admins: number;
+  total_applications: number;
+  active_in_process: number;
+  global_positive_rate: number;
   by_status: {
     applied: number;
     screening: number;

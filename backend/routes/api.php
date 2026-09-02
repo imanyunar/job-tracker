@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\JobApplicationController;
+use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Public Auth Endpoints
@@ -16,10 +18,17 @@ Route::prefix('auth')->group(function () {
 
 // Protected Endpoints (Requires Sanctum Bearer Token)
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth Profile & Logout
+    // Auth Session & Profile Me
     Route::prefix('auth')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
+    });
+
+    // Profile & Settings
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'show']);
+        Route::put('/', [ProfileController::class, 'update']);
+        Route::put('/password', [ProfileController::class, 'updatePassword']);
     });
 
     // Job Applications Management
@@ -32,5 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [JobApplicationController::class, 'update']);
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus']);
         Route::delete('/{id}', [JobApplicationController::class, 'destroy']);
+    });
+
+    // Admin Restricted Endpoints
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/stats', [AdminController::class, 'stats']);
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::patch('/users/{id}/role', [AdminController::class, 'updateUserRole']);
+        Route::get('/applications', [AdminController::class, 'applications']);
     });
 });

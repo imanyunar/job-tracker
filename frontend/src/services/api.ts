@@ -9,6 +9,9 @@ import type {
   RegisterPayload,
   AuthResponseData,
   User,
+  ProfileUpdatePayload,
+  ChangePasswordPayload,
+  AdminStats,
 } from '../types/job';
 
 const TOKEN_KEY = 'job_tracker_token';
@@ -36,7 +39,6 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // If unauthorized and not on a public auth request
       const isAuthUrl = error.config.url?.includes('/auth/login') || error.config.url?.includes('/auth/register');
       if (!isAuthUrl) {
         localStorage.removeItem(TOKEN_KEY);
@@ -91,6 +93,23 @@ export const authApi = {
   },
 };
 
+export const profileApi = {
+  async getProfile(): Promise<ApiResponse<{ user: User; stats: { total_applications: number; has_linkedin: boolean; member_since: string } }>> {
+    const response = await apiClient.get('/profile');
+    return response.data;
+  },
+
+  async updateProfile(data: ProfileUpdatePayload): Promise<ApiResponse<User>> {
+    const response = await apiClient.put<ApiResponse<User>>('/profile', data);
+    return response.data;
+  },
+
+  async changePassword(data: ChangePasswordPayload): Promise<ApiResponse<null>> {
+    const response = await apiClient.put<ApiResponse<null>>('/profile/password', data);
+    return response.data;
+  },
+};
+
 export const jobApi = {
   async getApplications(params: JobFilter = {}): Promise<ApiResponse<JobApplication[]>> {
     const response = await apiClient.get<ApiResponse<JobApplication[]>>('/job-applications', { params });
@@ -132,4 +151,31 @@ export const jobApi = {
   },
 };
 
-export default { auth: authApi, jobs: jobApi };
+export const adminApi = {
+  async getStats(): Promise<ApiResponse<AdminStats>> {
+    const response = await apiClient.get<ApiResponse<AdminStats>>('/admin/stats');
+    return response.data;
+  },
+
+  async getUsers(params: { search?: string; role?: string; page?: number; per_page?: number } = {}): Promise<ApiResponse<User[]>> {
+    const response = await apiClient.get<ApiResponse<User[]>>('/admin/users', { params });
+    return response.data;
+  },
+
+  async updateUserRole(id: number, role: 'user' | 'admin'): Promise<ApiResponse<User>> {
+    const response = await apiClient.patch<ApiResponse<User>>(`/admin/users/${id}/role`, { role });
+    return response.data;
+  },
+
+  async getApplications(params: JobFilter = {}): Promise<ApiResponse<JobApplication[]>> {
+    const response = await apiClient.get<ApiResponse<JobApplication[]>>('/admin/applications', { params });
+    return response.data;
+  },
+};
+
+export default {
+  auth: authApi,
+  profile: profileApi,
+  jobs: jobApi,
+  admin: adminApi,
+};

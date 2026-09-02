@@ -36,10 +36,13 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
+        $isFirstUser = User::count() === 0;
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => $isFirstUser ? 'admin' : 'user',
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -141,13 +144,15 @@ class AuthController extends Controller
                     'linkedin_id' => $linkedinId,
                     'avatar' => $avatar ?: $user->avatar,
                 ]);
-            } else {
+                $isFirstUser = User::count() === 0;
+
                 // Create brand new user
                 $user = User::create([
                     'name' => $name,
                     'email' => $email ?: "linkedin_{$linkedinId}@jobtracker.local",
                     'linkedin_id' => $linkedinId,
                     'avatar' => $avatar,
+                    'role' => $isFirstUser ? 'admin' : 'user',
                     'password' => null, // OAuth users don't require initial password
                 ]);
             }

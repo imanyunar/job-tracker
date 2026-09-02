@@ -23,6 +23,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'headline',
+        'phone',
+        'target_salary_min',
+        'target_salary_max',
+        'preferred_location',
         'linkedin_id',
         'avatar',
     ];
@@ -47,7 +53,17 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'target_salary_min' => 'float',
+            'target_salary_max' => 'float',
         ];
+    }
+
+    /**
+     * Check if user has admin privileges.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     /**

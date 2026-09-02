@@ -1,61 +1,80 @@
 <template>
-  <div class="min-h-screen bg-[#DCE1DE] text-[#1C2B2A] flex flex-col font-ui">
-    <!-- Initial Loading State -->
-    <div v-if="authLoading" class="min-h-screen flex flex-col items-center justify-center p-6 text-[#5B6863]">
-      <div class="inline-block animate-spin w-6 h-6 border-2 border-[#1C2B2A] border-t-transparent rounded-full mb-3"></div>
-      <p class="text-xs sm:text-sm">Menyiapkan buku catatan lamaran...</p>
-    </div>
+  <!-- Gated: When NOT Authenticated, show Landing Page with Animations and Auth Modal -->
+  <LandingPage
+    v-if="!isAuthenticated"
+    @auth-success="handleAuthSuccess"
+  />
 
-    <!-- Auth View (When User is not logged in) -->
-    <AuthCard
-      v-else-if="!isAuthenticated"
-      @auth-success="handleAuthSuccess"
-    />
-
-    <!-- Main Application View (When User is logged in) -->
-    <div v-else class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col flex-1 gap-4 sm:gap-6">
-      <!-- Header with User Profile and Actions -->
+  <!-- Main Authenticated Workspace -->
+  <div v-else class="min-h-screen bg-[#DCE1DE] text-[#1C2B2A] flex flex-col font-ui selection:bg-[#B8752F] selection:text-white">
+    <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 flex flex-col flex-1 pb-12">
+      <!-- Header Navigation Bar -->
       <HeaderBar
         :user="user"
-        @open-create="handleOpenCreate"
+        :current-view="currentView"
+        @update:current-view="currentView = $event"
+        @open-create="openCreateModal"
         @logout="handleLogout"
         @export-csv="handleExportCsv"
       />
 
-      <!-- Stats Bar -->
-      <JobStats :stats="stats" />
+      <!-- Main Workspace Views -->
+      <main class="flex-1 mt-5">
+        <!-- View 1: My Applications Tracker (Dual-Panel) -->
+        <div v-if="currentView === 'tracker'" class="space-y-5">
+          <!-- Summary Metrics Cards -->
+          <JobStats :stats="stats" />
 
-      <!-- Main Dual Panel Workspace -->
-      <main class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 flex-1 min-h-[560px]">
-        <!-- Left Panel: Job List (5 cols on lg) -->
-        <section class="lg:col-span-5 h-[520px] lg:h-[calc(100vh-270px)] min-h-[480px]">
-          <JobList
-            :applications="applications"
-            :selected-job-id="selectedJob?.id"
-            :loading="loading"
-            :stats="stats"
-            v-model:search-query="searchQuery"
-            v-model:selected-status="selectedStatus"
-            v-model:sort-by="sortBy"
-            @select-job="selectJob"
-            @open-create="handleOpenCreate"
-          />
-        </section>
+          <!-- Dual Panel Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            <!-- Left Panel: Job Applications List (5 cols) -->
+            <div class="lg:col-span-5 h-[calc(100vh-270px)] min-h-[500px]">
+              <JobList
+                :applications="applications"
+                :selected-id="selectedJob?.id ?? null"
+                :loading="loading"
+                :search-query="searchQuery"
+                :selected-status="selectedStatus"
+                :sort-by="sortBy"
+                @select="selectJob"
+                @update:search-query="searchQuery = $event"
+                @update:selected-status="selectedStatus = $event"
+                @update:sort-by="sortBy = $event"
+              />
+            </div>
 
-        <!-- Right Panel: Job Detail (7 cols on lg) -->
-        <section class="lg:col-span-7 h-[520px] lg:h-[calc(100vh-270px)] min-h-[480px]">
-          <JobDetail
-            :job="selectedJob"
-            :submitting="submitting"
-            @change-status="handleChangeStatus"
-            @edit-job="handleOpenEdit"
-            @delete-job="handleOpenDelete"
-          />
-        </section>
+            <!-- Right Panel: Job Detail & Notes Ledger (7 cols) -->
+            <div class="lg:col-span-7 h-[calc(100vh-270px)] min-h-[500px]">
+              <JobDetail
+                :job="selectedJob"
+                :loading="loading"
+                @edit="openEditModal"
+                @delete="openDeleteModal"
+                @status-change="handleStatusChange"
+                @open-create="openCreateModal"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- View 2: Profile & Career Preferences -->
+        <ProfileView
+          v-else-if="currentView === 'profile'"
+          :user="user"
+          @profile-updated="handleProfileUpdated"
+          @show-toast="handleShowToast"
+        />
+
+        <!-- View 3: Admin Management Panel -->
+        <AdminView
+          v-else-if="currentView === 'admin' && user?.role === 'admin'"
+          :current-user="user"
+          @show-toast="handleShowToast"
+        />
       </main>
     </div>
 
-    <!-- Modals -->
+    <!-- Job Application Create / Edit Modal -->
     <JobModal
       :is-open="isModalOpen"
       :job-to-edit="jobToEdit"
@@ -64,6 +83,7 @@
       @submit="handleFormSubmit"
     />
 
+    <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :is-open="isDeleteModalOpen"
       :job="jobToDelete"
@@ -72,28 +92,31 @@
       @confirm="handleConfirmDelete"
     />
 
-    <!-- Toast Notifications -->
+    <!-- Global Toast Notifications -->
     <Toast ref="toastRef" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import type { JobApplication, JobFormPayload, JobStatus } from './types/job';
+import type { JobApplication, JobFormPayload, JobStatus, User } from './types/job';
 import { useJobs } from './composables/useJobs';
 import { useAuth } from './composables/useAuth';
-import { authApi } from './services/api';
+import { authApi, jobApi } from './services/api';
 
-import AuthCard from './components/AuthCard.vue';
+import LandingPage from './components/LandingPage.vue';
 import HeaderBar from './components/HeaderBar.vue';
 import JobStats from './components/JobStats.vue';
 import JobList from './components/JobList.vue';
 import JobDetail from './components/JobDetail.vue';
 import JobModal from './components/JobModal.vue';
 import DeleteConfirmModal from './components/DeleteConfirmModal.vue';
+import ProfileView from './components/ProfileView.vue';
+import AdminView from './components/AdminView.vue';
 import Toast from './components/Toast.vue';
 
-const { user, isAuthenticated, loading: authLoading, checkAuth, logout } = useAuth();
+const { user, isAuthenticated, checkAuth, logout } = useAuth();
+const currentView = ref<'tracker' | 'profile' | 'admin'>('tracker');
 
 const {
   applications,
@@ -155,26 +178,66 @@ const loadInitialData = async () => {
 };
 
 const handleAuthSuccess = async () => {
-  toastRef.value?.show(`Selamat datang, ${user.value?.name || 'User'}!`);
+  await checkAuth();
+  currentView.value = 'tracker';
   await loadInitialData();
+  toastRef.value?.show(`Selamat datang kembali, ${user.value?.name || 'Pengguna'}!`);
 };
 
 const handleLogout = async () => {
   await logout();
-  toastRef.value?.show('Berhasil keluar dari akun.');
+  toastRef.value?.show('Berhasil keluar dari akun.', 'info');
 };
 
-const handleOpenCreate = () => {
+const handleProfileUpdated = (updatedUser: User) => {
+  if (user.value) {
+    user.value = { ...user.value, ...updatedUser };
+  }
+};
+
+const handleShowToast = (msg: string, type: 'success' | 'error' | 'info' = 'success') => {
+  toastRef.value?.show(msg, type);
+};
+
+const handleExportCsv = () => {
+  const token = authApi.getToken();
+  const exportUrl = jobApi.getExportUrl();
+  
+  // Trigger download with auth token
+  fetch(exportUrl, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'text/csv',
+    }
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `job-applications-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    toastRef.value?.show('File CSV riwayat lamaran berhasil diunduh.');
+  })
+  .catch(() => {
+    toastRef.value?.show('Gagal mengunduh file CSV.', 'error');
+  });
+};
+
+const openCreateModal = () => {
   jobToEdit.value = null;
   isModalOpen.value = true;
 };
 
-const handleOpenEdit = (job: JobApplication) => {
+const openEditModal = (job: JobApplication) => {
   jobToEdit.value = job;
   isModalOpen.value = true;
 };
 
-const handleOpenDelete = (job: JobApplication) => {
+const openDeleteModal = (job: JobApplication) => {
   jobToDelete.value = job;
   isDeleteModalOpen.value = true;
 };
@@ -183,65 +246,38 @@ const handleFormSubmit = async (payload: JobFormPayload) => {
   try {
     if (jobToEdit.value) {
       await updateJob(jobToEdit.value.id, payload);
-      toastRef.value?.show(`Perubahan lamaran di ${payload.company_name} berhasil disimpan.`);
+      toastRef.value?.show(`Lamaran di ${payload.company_name} berhasil diperbarui.`);
     } else {
       await createJob(payload);
-      toastRef.value?.show(`Lamaran baru di ${payload.company_name} berhasil ditambahkan.`);
+      toastRef.value?.show(`Lamaran baru di ${payload.company_name} berhasil dicatat.`);
     }
     isModalOpen.value = false;
-  } catch (err: any) {
-    const message = err.response?.data?.message || 'Gagal menyimpan data lamaran.';
-    toastRef.value?.show(message, 'error');
+  } catch (error: any) {
+    const msg = error.response?.data?.message || 'Gagal menyimpan data lamaran.';
+    toastRef.value?.show(msg, 'error');
   }
 };
 
-const handleChangeStatus = async (id: number, status: JobStatus) => {
+const handleStatusChange = async (payload: { id: number; status: JobStatus }) => {
   try {
-    const res = await changeStatus(id, status);
-    toastRef.value?.show(res.message || `Status diubah menjadi '${status}'.`);
-  } catch (err: any) {
-    const message = err.response?.data?.message || 'Gagal mengubah status.';
-    toastRef.value?.show(message, 'error');
+    await changeStatus(payload.id, payload.status);
+    toastRef.value?.show(`Status lamaran diubah menjadi "${payload.status}".`);
+  } catch (error: any) {
+    const msg = error.response?.data?.message || 'Gagal mengubah status.';
+    toastRef.value?.show(msg, 'error');
   }
 };
 
-const handleConfirmDelete = async (id: number | undefined) => {
-  if (!id) return;
+const handleConfirmDelete = async () => {
+  if (!jobToDelete.value) return;
   try {
-    const company = jobToDelete.value?.company_name || 'Lamaran';
-    await deleteJob(id);
-    toastRef.value?.show(`Data lamaran ${company} berhasil dihapus.`);
+    const company = jobToDelete.value.company_name;
+    await deleteJob(jobToDelete.value.id);
+    toastRef.value?.show(`Lamaran di ${company} berhasil dihapus.`);
     isDeleteModalOpen.value = false;
-  } catch (err: any) {
-    const message = err.response?.data?.message || 'Gagal menghapus lamaran.';
-    toastRef.value?.show(message, 'error');
-  }
-};
-
-const handleExportCsv = async () => {
-  try {
-    const token = authApi.getToken();
-    const response = await fetch('/api/job-applications/export', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) throw new Error('Gagal mengunduh CSV');
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `job_applications_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-
-    toastRef.value?.show('File CSV berhasil diunduh.');
-  } catch (err) {
-    toastRef.value?.show('Gagal mengekspor data ke CSV.', 'error');
+  } catch (error: any) {
+    const msg = error.response?.data?.message || 'Gagal menghapus lamaran.';
+    toastRef.value?.show(msg, 'error');
   }
 };
 </script>
