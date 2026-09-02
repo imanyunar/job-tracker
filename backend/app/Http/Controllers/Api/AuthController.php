@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -100,7 +101,12 @@ class AuthController extends Controller
 
             return $driver->redirect();
         } catch (Throwable $e) {
-            return $this->errorResponse('Gagal menginisiasi login LinkedIn: ' . $e->getMessage(), 500);
+            Log::error('LinkedIn Redirect Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDebug = config('app.debug', false);
+            return $this->errorResponse(
+                $isDebug ? 'Gagal menginisiasi login LinkedIn: ' . $e->getMessage() : 'Gagal menghubungi server LinkedIn. Silakan coba beberapa saat lagi.',
+                500
+            );
         }
     }
 
@@ -164,8 +170,12 @@ class AuthController extends Controller
             // Redirect back to frontend with token parameter
             return redirect("{$frontendUrl}/?token=" . urlencode($token));
         } catch (Throwable $e) {
-            $errorMessage = urlencode('Gagal login dengan LinkedIn: ' . $e->getMessage());
-            return redirect("{$frontendUrl}/?error={$errorMessage}");
+            Log::error('LinkedIn Callback OAuth Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $isDebug = config('app.debug', false);
+            $userFacingMessage = $isDebug
+                ? 'Gagal login dengan LinkedIn: ' . $e->getMessage()
+                : 'Gagal melakukan login dengan LinkedIn. Silakan coba beberapa saat lagi.';
+            return redirect("{$frontendUrl}/?error=" . urlencode($userFacingMessage));
         }
     }
 

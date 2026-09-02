@@ -151,6 +151,25 @@ const jobToEdit = ref<JobApplication | null>(null);
 const isDeleteModalOpen = ref(false);
 const jobToDelete = ref<JobApplication | null>(null);
 
+const sanitizeErrorMessage = (raw: string): string => {
+  if (!raw) return 'Terjadi kendala pada sistem. Silakan coba beberapa saat lagi.';
+  const lower = raw.toLowerCase();
+  if (
+    lower.includes('sqlstate') ||
+    lower.includes('pdoexception') ||
+    lower.includes('queryexception') ||
+    lower.includes('syntax error') ||
+    lower.includes('stack trace') ||
+    lower.includes('duplicate entry')
+  ) {
+    if (lower.includes('duplicate entry')) {
+      return 'Akun atau email ini sudah terdaftar di sistem.';
+    }
+    return 'Terjadi kendala pada sistem. Silakan coba beberapa saat lagi.';
+  }
+  return raw;
+};
+
 onMounted(async () => {
   // Check if returning from LinkedIn OAuth callback with token or error
   const urlParams = new URLSearchParams(window.location.search);
@@ -171,7 +190,8 @@ onMounted(async () => {
 
   if (errorFromUrl) {
     window.history.replaceState({}, document.title, window.location.pathname);
-    toastRef.value?.show(decodeURIComponent(errorFromUrl), 'error');
+    const safeMsg = sanitizeErrorMessage(decodeURIComponent(errorFromUrl));
+    toastRef.value?.show(safeMsg, 'error');
   }
 
   const isAuthed = await checkAuth();
