@@ -86,7 +86,7 @@ class ProfileController extends Controller
             ]);
         }
 
-        $user->password = Hash::make($request->input('password'));
+        $user->password = $request->input('password');
         $user->save();
 
         return $this->successResponse(null, 'Kata sandi berhasil diperbarui.');
