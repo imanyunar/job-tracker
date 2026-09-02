@@ -144,6 +144,7 @@ class AuthController extends Controller
                     'linkedin_id' => $linkedinId,
                     'avatar' => $avatar ?: $user->avatar,
                 ]);
+            } else {
                 $isFirstUser = User::count() === 0;
 
                 // Create brand new user
