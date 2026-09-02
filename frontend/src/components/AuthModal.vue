@@ -38,13 +38,25 @@
 
             <!-- Body -->
             <div class="p-6 space-y-4">
-              <!-- Error Message -->
+              <!-- Error Message with Smart Existing Account Handling -->
               <transition name="fade-slide">
                 <div
                   v-if="errorMessage"
-                  class="bg-[#F8EFEF] border border-[#8B5A5A]/30 text-[#8B5A5A] px-3.5 py-2.5 rounded-lg text-xs leading-relaxed"
+                  class="bg-[#F8EFEF] border border-[#8B5A5A]/30 text-[#8B5A5A] px-3.5 py-2.5 rounded-lg text-xs leading-relaxed flex items-start justify-between gap-2"
                 >
-                  {{ errorMessage }}
+                  <div>
+                    <span>{{ errorMessage }}</span>
+                    <div v-if="isExistingAccountError" class="mt-1">
+                      <button
+                        type="button"
+                        @click="switchToLoginWithEmail"
+                        class="font-bold underline text-[#1C2B2A] hover:text-[#B8752F] cursor-pointer"
+                      >
+                        Klik di sini untuk langsung Masuk ke Akun ➔
+                      </button>
+                    </div>
+                  </div>
+                  <button @click="clearErrors" class="text-[#8B5A5A] hover:text-[#1C2B2A] text-xs font-bold cursor-pointer" title="Tutup">✕</button>
                 </div>
               </transition>
 
@@ -206,6 +218,7 @@ const { login, register, submitting } = useAuth();
 
 const mode = ref<'login' | 'register'>('login');
 const errorMessage = ref('');
+const isExistingAccountError = ref(false);
 
 watch(
   () => props.initialMode,
@@ -229,6 +242,13 @@ const registerForm = reactive({
 
 const clearErrors = () => {
   errorMessage.value = '';
+  isExistingAccountError.value = false;
+};
+
+const switchToLoginWithEmail = () => {
+  loginForm.email = registerForm.email;
+  mode.value = 'login';
+  clearErrors();
 };
 
 const handleLinkedInLogin = () => {
@@ -236,7 +256,7 @@ const handleLinkedInLogin = () => {
 };
 
 const handleLogin = async () => {
-  errorMessage.value = '';
+  clearErrors();
   try {
     await login({
       email: loginForm.email.trim(),
@@ -250,7 +270,7 @@ const handleLogin = async () => {
 };
 
 const handleRegister = async () => {
-  errorMessage.value = '';
+  clearErrors();
   if (registerForm.password !== registerForm.password_confirmation) {
     errorMessage.value = 'Konfirmasi kata sandi tidak cocok.';
     return;
@@ -276,6 +296,14 @@ const handleRegister = async () => {
       errorMessage.value = errorData.errors[firstKey][0];
     } else {
       errorMessage.value = errorData?.message || 'Pendaftaran akun gagal. Silakan coba lagi.';
+    }
+
+    // Check if error is related to existing email
+    if (
+      errorMessage.value.toLowerCase().includes('sudah terdaftar') ||
+      errorMessage.value.toLowerCase().includes('already taken')
+    ) {
+      isExistingAccountError.value = true;
     }
   }
 };
