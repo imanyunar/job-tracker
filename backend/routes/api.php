@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
+    // LinkedIn OAuth
+    Route::get('/linkedin/redirect', [AuthController::class, 'linkedinRedirect']);
+    Route::get('/linkedin/callback', [AuthController::class, 'linkedinCallback']);
 });
 
 // Protected Endpoints (Requires Sanctum Bearer Token)

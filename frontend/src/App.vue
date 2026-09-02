@@ -123,6 +123,27 @@ const isDeleteModalOpen = ref(false);
 const jobToDelete = ref<JobApplication | null>(null);
 
 onMounted(async () => {
+  // Check if returning from LinkedIn OAuth callback with token or error
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+  const errorFromUrl = urlParams.get('error');
+
+  if (tokenFromUrl) {
+    authApi.setToken(tokenFromUrl);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    const isAuthed = await checkAuth();
+    if (isAuthed) {
+      toastRef.value?.show(`Berhasil masuk dengan LinkedIn! Selamat datang, ${user.value?.name || 'Pengguna'}.`);
+      await loadInitialData();
+      return;
+    }
+  }
+
+  if (errorFromUrl) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    toastRef.value?.show(decodeURIComponent(errorFromUrl), 'error');
+  }
+
   const isAuthed = await checkAuth();
   if (isAuthed) {
     await loadInitialData();

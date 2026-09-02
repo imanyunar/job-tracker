@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Facades\Socialite;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -63,7 +65,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (!$user || !$user->password || !Hash::check($validated['password'], $user->password)) {
             return $this->errorResponse('Email atau kata sandi yang kamu masukkan salah.', 401);
         }
 
@@ -73,6 +75,74 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token,
         ], 'Berhasil masuk ke akun.');
+    }
+
+    /**
+     * Redirect to LinkedIn OAuth Authorization page.
+     */
+    public function linkedinRedirect(): RedirectResponse|JsonResponse
+    {
+        try {
+            return Socialite::driver('linkedin-openid')
+                ->stateless()
+                ->scopes(['openid', 'profile', 'email'])
+                ->redirect();
+        } catch (Throwable $e) {
+            return $this->errorResponse('Gagal menginisiasi login LinkedIn: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Handle OAuth Callback from LinkedIn.
+     */
+    public function linkedinCallback(): RedirectResponse
+    {
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+
+        try {
+            /** @var \Laravel\Socialite\Two\User $linkedinUser */
+            $linkedinUser = Socialite::driver('linkedin-openid')
+                ->stateless()
+                ->user();
+
+            $email = $linkedinUser->getEmail();
+            $name = $linkedinUser->getName() ?: ($linkedinUser->getNickname() ?: 'LinkedIn User');
+            $linkedinId = $linkedinUser->getId();
+            $avatar = $linkedinUser->getAvatar();
+
+            // Find existing user by linkedin_id or by email
+            $user = User::where('linkedin_id', $linkedinId)->first();
+
+            if (!$user && $email) {
+                $user = User::where('email', $email)->first();
+            }
+
+            if ($user) {
+                // Update missing LinkedIn fields if needed
+                $user->update([
+                    'linkedin_id' => $linkedinId,
+                    'avatar' => $avatar ?: $user->avatar,
+                ]);
+            } else {
+                // Create brand new user
+                $user = User::create([
+                    'name' => $name,
+                    'email' => $email ?: "linkedin_{$linkedinId}@jobtracker.local",
+                    'linkedin_id' => $linkedinId,
+                    'avatar' => $avatar,
+                    'password' => null, // OAuth users don't require initial password
+                ]);
+            }
+
+            // Generate Bearer token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Redirect back to frontend with token parameter
+            return redirect("{$frontendUrl}/?token=" . urlencode($token));
+        } catch (Throwable $e) {
+            $errorMessage = urlencode('Gagal login dengan LinkedIn: ' . $e->getMessage());
+            return redirect("{$frontendUrl}/?error={$errorMessage}");
+        }
     }
 
     /**

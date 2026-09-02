@@ -14,30 +14,10 @@
         <p class="text-xs sm:text-sm text-[#5B6863] mt-1">
           Buku catatan jujur dan tenang untuk memantau proses lamaran kerjamu.
         </p>
-
-        <!-- Mode Switcher Tabs -->
-        <div class="flex rounded-lg bg-[#DCE1DE] p-1 mt-6 border border-[#C8D0CC]">
-          <button
-            type="button"
-            @click="mode = 'login'; clearErrors()"
-            class="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
-            :class="mode === 'login' ? 'bg-[#F3F4F0] text-[#1C2B2A] shadow-xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
-          >
-            Masuk ke Akun
-          </button>
-          <button
-            type="button"
-            @click="mode = 'register'; clearErrors()"
-            class="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
-            :class="mode === 'register' ? 'bg-[#F3F4F0] text-[#1C2B2A] shadow-xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
-          >
-            Daftar Akun Baru
-          </button>
-        </div>
       </div>
 
       <!-- Form Body -->
-      <div class="p-6 sm:p-8 space-y-4">
+      <div class="p-6 sm:p-8 space-y-5">
         <!-- Error Alert -->
         <div
           v-if="errorMessage"
@@ -46,8 +26,52 @@
           {{ errorMessage }}
         </div>
 
+        <!-- Social Login: LinkedIn -->
+        <div>
+          <button
+            type="button"
+            @click="handleLinkedInLogin"
+            class="w-full py-2.5 px-4 text-xs sm:text-sm font-semibold text-white bg-[#0A66C2] hover:bg-[#004182] active:bg-[#094c92] rounded-md shadow-xs transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
+          >
+            <!-- Official LinkedIn Logo SVG -->
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+            </svg>
+            Masuk dengan LinkedIn
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative flex items-center justify-center">
+          <div class="border-t border-[#C8D0CC] w-full"></div>
+          <span class="bg-[#F3F4F0] px-3 text-[11px] text-[#82918B] uppercase tracking-wider font-medium shrink-0">
+            atau dengan email
+          </span>
+          <div class="border-t border-[#C8D0CC] w-full"></div>
+        </div>
+
+        <!-- Mode Switcher Tabs -->
+        <div class="flex rounded-lg bg-[#DCE1DE] p-1 border border-[#C8D0CC]">
+          <button
+            type="button"
+            @click="mode = 'login'; clearErrors()"
+            class="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
+            :class="mode === 'login' ? 'bg-[#F3F4F0] text-[#1C2B2A] shadow-xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
+          >
+            Masuk Akun
+          </button>
+          <button
+            type="button"
+            @click="mode = 'register'; clearErrors()"
+            class="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
+            :class="mode === 'register' ? 'bg-[#F3F4F0] text-[#1C2B2A] shadow-xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
+          >
+            Daftar Baru
+          </button>
+        </div>
+
         <!-- Login Form -->
-        <form v-if="mode === 'login'" @submit.prevent="handleLogin" class="space-y-4">
+        <form v-if="mode === 'login'" @submit.prevent="handleLogin" class="space-y-4 pt-1">
           <div>
             <label class="block text-xs font-semibold text-[#1C2B2A] mb-1">
               Alamat Email
@@ -84,7 +108,7 @@
         </form>
 
         <!-- Register Form -->
-        <form v-else @submit.prevent="handleRegister" class="space-y-4">
+        <form v-else @submit.prevent="handleRegister" class="space-y-4 pt-1">
           <div>
             <label class="block text-xs font-semibold text-[#1C2B2A] mb-1">
               Nama Lengkap
@@ -184,6 +208,11 @@ const registerForm = reactive({
 
 const clearErrors = () => {
   errorMessage.value = '';
+};
+
+const handleLinkedInLogin = () => {
+  // Redirect to LinkedIn OAuth endpoint in backend
+  window.location.href = '/api/auth/linkedin/redirect';
 };
 
 const handleLogin = async () => {
