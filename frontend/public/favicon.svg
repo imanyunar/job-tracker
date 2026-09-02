@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="7" fill="#1C2B2A"/>
+  <!-- Briefcase outline -->
+  <rect x="5" y="10" width="22" height="16" rx="3" stroke="#DCE1DE" stroke-width="2"/>
+  <!-- Briefcase handle -->
+  <path d="M11 10V7C11 5.89543 11.8954 5 13 5H19C20.1046 5 21 5.89543 21 7V10" stroke="#B8752F" stroke-width="2" stroke-linecap="round"/>
+  <!-- Horizontal clasp line -->
+  <line x1="5" y1="17" x2="27" y2="17" stroke="#DCE1DE" stroke-width="1.5" stroke-dasharray="2 2"/>
+  <!-- Center lock accent -->
+  <rect x="14" y="15" width="4" height="4" rx="1" fill="#B8752F"/>
+</svg>

@@ -1,5 +1,17 @@
 import axios from 'axios';
-import type { JobApplication, JobFormPayload, JobStats, ApiResponse, JobFilter } from '../types/job';
+import type {
+  JobApplication,
+  JobFormPayload,
+  JobStats,
+  ApiResponse,
+  JobFilter,
+  LoginPayload,
+  RegisterPayload,
+  AuthResponseData,
+  User,
+} from '../types/job';
+
+const TOKEN_KEY = 'job_tracker_token';
 
 const apiClient = axios.create({
   baseURL: '/api',
@@ -9,6 +21,75 @@ const apiClient = axios.create({
     'X-Requested-With': 'XMLHttpRequest',
   },
 });
+
+// Attach Bearer token to every request if available
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// On 401 Unauthorized, automatically handle session expiry
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // If unauthorized and not on a public auth request
+      const isAuthUrl = error.config.url?.includes('/auth/login') || error.config.url?.includes('/auth/register');
+      if (!isAuthUrl) {
+        localStorage.removeItem(TOKEN_KEY);
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authApi = {
+  getToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY);
+  },
+
+  setToken(token: string): void {
+    localStorage.setItem(TOKEN_KEY, token);
+  },
+
+  removeToken(): void {
+    localStorage.removeItem(TOKEN_KEY);
+  },
+
+  async register(data: RegisterPayload): Promise<ApiResponse<AuthResponseData>> {
+    const response = await apiClient.post<ApiResponse<AuthResponseData>>('/auth/register', data);
+    if (response.data?.data?.token) {
+      this.setToken(response.data.data.token);
+    }
+    return response.data;
+  },
+
+  async login(data: LoginPayload): Promise<ApiResponse<AuthResponseData>> {
+    const response = await apiClient.post<ApiResponse<AuthResponseData>>('/auth/login', data);
+    if (response.data?.data?.token) {
+      this.setToken(response.data.data.token);
+    }
+    return response.data;
+  },
+
+  async logout(): Promise<ApiResponse<null>> {
+    try {
+      const response = await apiClient.post<ApiResponse<null>>('/auth/logout');
+      return response.data;
+    } finally {
+      this.removeToken();
+    }
+  },
+
+  async getMe(): Promise<ApiResponse<User>> {
+    const response = await apiClient.get<ApiResponse<User>>('/auth/me');
+    return response.data;
+  },
+};
 
 export const jobApi = {
   async getApplications(params: JobFilter = {}): Promise<ApiResponse<JobApplication[]>> {
@@ -51,4 +132,4 @@ export const jobApi = {
   },
 };
 
-export default jobApi;
+export default { auth: authApi, jobs: jobApi };

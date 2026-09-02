@@ -1,5 +1,29 @@
 export type JobStatus = 'applied' | 'screening' | 'interview' | 'offer' | 'rejected' | 'accepted';
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  created_at?: string;
+}
+
+export interface AuthResponseData {
+  user: User;
+  token: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export interface JobApplication {
   id: number;
   user_id?: number | null;

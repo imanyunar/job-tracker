@@ -16,10 +16,11 @@ class JobApplicationController extends Controller
     use ApiResponse;
 
     /**
-     * Display a listing of job applications with filter, search, and pagination.
+     * Display a listing of job applications for the authenticated user.
      */
     public function index(Request $request): JsonResponse
     {
+        $userId = $request->user()->id;
         $status = $request->query('status');
         $search = $request->query('search');
         $sortBy = $request->query('sort_by', 'applied_date');
@@ -27,6 +28,7 @@ class JobApplicationController extends Controller
         $perPage = $request->query('per_page', 15);
 
         $query = JobApplication::query()
+            ->where('user_id', $userId)
             ->filterStatus($status)
             ->search($search)
             ->sortBy($sortBy, $sortOrder);
@@ -41,14 +43,12 @@ class JobApplicationController extends Controller
     }
 
     /**
-     * Store a newly created job application.
+     * Store a newly created job application for the authenticated user.
      */
     public function store(JobApplicationRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        if ($request->user()) {
-            $validated['user_id'] = $request->user()->id;
-        }
+        $validated['user_id'] = $request->user()->id;
 
         $jobApplication = JobApplication::create($validated);
 
@@ -58,9 +58,11 @@ class JobApplicationController extends Controller
     /**
      * Display the specified job application.
      */
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
-        $jobApplication = JobApplication::find($id);
+        $jobApplication = JobApplication::where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$jobApplication) {
             return $this->errorResponse('Data lamaran tidak ditemukan.', 404);
@@ -74,7 +76,9 @@ class JobApplicationController extends Controller
      */
     public function update(JobApplicationRequest $request, int $id): JsonResponse
     {
-        $jobApplication = JobApplication::find($id);
+        $jobApplication = JobApplication::where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$jobApplication) {
             return $this->errorResponse('Data lamaran tidak ditemukan.', 404);
@@ -97,7 +101,9 @@ class JobApplicationController extends Controller
             'status.in' => 'Status pilihan tidak valid.',
         ]);
 
-        $jobApplication = JobApplication::find($id);
+        $jobApplication = JobApplication::where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$jobApplication) {
             return $this->errorResponse('Data lamaran tidak ditemukan.', 404);
@@ -112,9 +118,11 @@ class JobApplicationController extends Controller
     /**
      * Remove the specified job application.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $jobApplication = JobApplication::find($id);
+        $jobApplication = JobApplication::where('user_id', $request->user()->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$jobApplication) {
             return $this->errorResponse('Data lamaran tidak ditemukan.', 404);
@@ -126,12 +134,15 @@ class JobApplicationController extends Controller
     }
 
     /**
-     * Get aggregate statistics for the dashboard.
+     * Get aggregate statistics for the authenticated user.
      */
-    public function stats(): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
-        $total = JobApplication::count();
-        $byStatus = JobApplication::select('status', DB::raw('count(*) as count'))
+        $userId = $request->user()->id;
+
+        $total = JobApplication::where('user_id', $userId)->count();
+        $byStatus = JobApplication::where('user_id', $userId)
+            ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
@@ -154,11 +165,14 @@ class JobApplicationController extends Controller
     }
 
     /**
-     * Export applications to CSV.
+     * Export applications to CSV for the authenticated user.
      */
-    public function export(): StreamedResponse
+    public function export(Request $request): StreamedResponse
     {
-        $applications = JobApplication::orderBy('applied_date', 'desc')->get();
+        $userId = $request->user()->id;
+        $applications = JobApplication::where('user_id', $userId)
+            ->orderBy('applied_date', 'desc')
+            ->get();
 
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
