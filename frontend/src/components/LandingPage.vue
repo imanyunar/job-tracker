@@ -41,9 +41,9 @@
 
     <!-- Hero Section -->
     <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 text-center relative z-10">
-      <!-- Animated Pill Badge with Floating Micro-animation -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ECEEEA]/90 backdrop-blur-xs border border-[#C8D0CC] text-xs font-medium text-[#5B6863] mb-6 shadow-sm animate-bounce-subtle">
-        <span class="w-2 h-2 rounded-full bg-[#B8752F] animate-ping"></span>
+      <!-- Clean Static Pill Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ECEEEA]/90 backdrop-blur-xs border border-[#C8D0CC] text-xs font-medium text-[#5B6863] mb-6 shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-[#B8752F]"></span>
         <span class="font-semibold text-[#1C2B2A]">Ruang Tenang Karirmu</span>
         <span class="text-[#82918B]">•</span>
         <span>Simpel & Tanpa Distraksi</span>
