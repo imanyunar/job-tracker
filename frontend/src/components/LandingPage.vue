@@ -238,8 +238,11 @@
           </div>
         </div>
 
-        <!-- Feature 2 -->
-        <div class="group bg-[#F3F4F0] border border-[#C8D0CC] hover:border-[#1C2B2A]/40 rounded-2xl p-7 shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between">
+        <!-- Feature 2: LinkedIn OAuth Card -->
+        <div
+          @click="handleLinkedInLogin"
+          class="group bg-[#F3F4F0] border border-[#C8D0CC] hover:border-[#0A66C2]/50 rounded-2xl p-7 shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between cursor-pointer"
+        >
           <div>
             <div class="w-12 h-12 rounded-2xl bg-[#ECEEEA] border border-[#C8D0CC] text-[#0A66C2] flex items-center justify-center font-bold text-xl mb-5 group-hover:scale-110 transition-transform duration-300 shadow-2xs">
               ⚡
@@ -249,8 +252,9 @@
               Masuk secara instan menggunakan akun LinkedIn Anda melalui protokol OAuth 2.0 OpenID Connect resmi. Privasi data terenkripsi dan terisolasi privat.
             </p>
           </div>
-          <div class="mt-6 pt-4 border-t border-[#C8D0CC]/60 text-xs font-semibold text-[#0A66C2]">
-            Aman & Terpercaya ➔
+          <div class="mt-6 pt-4 border-t border-[#C8D0CC]/60 text-xs font-semibold text-[#0A66C2] flex items-center gap-1.5">
+            <span>Masuk Sekarang</span>
+            <span class="transform group-hover:translate-x-1 transition-transform">➔</span>
           </div>
         </div>
 
