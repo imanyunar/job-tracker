@@ -18,59 +18,63 @@
         @export-csv="handleExportCsv"
       />
 
-      <!-- Main Workspace Views -->
+      <!-- Main Workspace Views with Smooth Animation -->
       <main class="flex-1 mt-5">
-        <!-- View 1: My Applications Tracker (Dual-Panel) -->
-        <div v-if="currentView === 'tracker'" class="space-y-5">
-          <!-- Summary Metrics Cards -->
-          <JobStats :stats="stats" />
+        <transition name="fade-slide" mode="out-in">
+          <!-- View 1: My Applications Tracker (Dual-Panel) -->
+          <div v-if="currentView === 'tracker'" key="tracker" class="space-y-5">
+            <!-- Summary Metrics Cards -->
+            <JobStats :stats="stats" />
 
-          <!-- Dual Panel Layout -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            <!-- Left Panel: Job Applications List (5 cols) -->
-            <div class="lg:col-span-5 h-[calc(100vh-270px)] min-h-[500px]">
-              <JobList
-                :applications="applications"
-                :selected-id="selectedJob?.id ?? null"
-                :loading="loading"
-                :search-query="searchQuery"
-                :selected-status="selectedStatus"
-                :sort-by="sortBy"
-                @select="selectJob"
-                @update:search-query="searchQuery = $event"
-                @update:selected-status="selectedStatus = $event"
-                @update:sort-by="sortBy = $event"
-              />
-            </div>
+            <!-- Dual Panel Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              <!-- Left Panel: Job Applications List (5 cols) -->
+              <div class="lg:col-span-5 h-[calc(100vh-270px)] min-h-[500px]">
+                <JobList
+                  :applications="applications"
+                  :selected-id="selectedJob?.id ?? null"
+                  :loading="loading"
+                  :search-query="searchQuery"
+                  :selected-status="selectedStatus"
+                  :sort-by="sortBy"
+                  @select="selectJob"
+                  @update:search-query="searchQuery = $event"
+                  @update:selected-status="selectedStatus = $event"
+                  @update:sort-by="sortBy = $event"
+                />
+              </div>
 
-            <!-- Right Panel: Job Detail & Notes Ledger (7 cols) -->
-            <div class="lg:col-span-7 h-[calc(100vh-270px)] min-h-[500px]">
-              <JobDetail
-                :job="selectedJob"
-                :loading="loading"
-                @edit="openEditModal"
-                @delete="openDeleteModal"
-                @status-change="handleStatusChange"
-                @open-create="openCreateModal"
-              />
+              <!-- Right Panel: Job Detail & Notes Ledger (7 cols) -->
+              <div class="lg:col-span-7 h-[calc(100vh-270px)] min-h-[500px]">
+                <JobDetail
+                  :job="selectedJob"
+                  :loading="loading"
+                  @edit="openEditModal"
+                  @delete="openDeleteModal"
+                  @status-change="handleStatusChange"
+                  @open-create="openCreateModal"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- View 2: Profile & Career Preferences -->
-        <ProfileView
-          v-else-if="currentView === 'profile'"
-          :user="user"
-          @profile-updated="handleProfileUpdated"
-          @show-toast="handleShowToast"
-        />
+          <!-- View 2: Profile & Career Preferences -->
+          <div v-else-if="currentView === 'profile'" key="profile">
+            <ProfileView
+              :user="user"
+              @profile-updated="handleProfileUpdated"
+              @show-toast="handleShowToast"
+            />
+          </div>
 
-        <!-- View 3: Admin Management Panel -->
-        <AdminView
-          v-else-if="currentView === 'admin' && user?.role === 'admin'"
-          :current-user="user"
-          @show-toast="handleShowToast"
-        />
+          <!-- View 3: Admin Management Panel -->
+          <div v-else-if="currentView === 'admin' && user?.role === 'admin'" key="admin">
+            <AdminView
+              :current-user="user"
+              @show-toast="handleShowToast"
+            />
+          </div>
+        </transition>
       </main>
     </div>
 
