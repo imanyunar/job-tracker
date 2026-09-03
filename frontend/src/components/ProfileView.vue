@@ -318,14 +318,24 @@ onMounted(async () => {
 
 const getInitials = (name?: string): string => {
   if (!name) return 'U';
-  const parts = name.trim().split(' ');
-  if (parts.length >= 2) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
-  return name.slice(0, 2).toUpperCase();
+  const clean = name.trim();
+  return (clean.slice(0, Math.min(2, clean.length)) || 'U').toUpperCase();
 };
 
 const handleUpdateProfile = async () => {
+  if (
+    profileForm.target_salary_min &&
+    profileForm.target_salary_max &&
+    Number(profileForm.target_salary_min) > Number(profileForm.target_salary_max)
+  ) {
+    emit('show-toast', 'Target gaji maksimum harus lebih besar atau sama dengan gaji minimum.', 'error');
+    return;
+  }
+
   savingProfile.value = true;
   try {
     const res = await profileApi.updateProfile({ ...profileForm });

@@ -43,7 +43,17 @@ class ProfileController extends Controller
             'headline' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'target_salary_min' => ['nullable', 'numeric', 'min:0'],
-            'target_salary_max' => ['nullable', 'numeric', 'min:0'],
+            'target_salary_max' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) use ($request) {
+                    $min = $request->input('target_salary_min');
+                    if ($value !== null && $min !== null && (float)$value < (float)$min) {
+                        $fail('Target gaji maksimum harus lebih besar atau sama dengan target minimum.');
+                    }
+                },
+            ],
             'preferred_location' => ['nullable', 'string', 'max:255'],
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',

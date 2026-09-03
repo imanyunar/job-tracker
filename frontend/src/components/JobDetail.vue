@@ -99,7 +99,7 @@
       <div v-if="job.job_url" class="flex items-center gap-2 text-xs text-[#5B6863]">
         <span class="font-medium">Tautan Lowongan:</span>
         <a
-          :href="job.job_url"
+          :href="formatExternalUrl(job.job_url)"
           target="_blank"
           rel="noopener noreferrer"
           class="text-[#B8752F] hover:underline flex items-center gap-1 truncate max-w-md"
@@ -206,15 +206,27 @@ const formatDateLong = (dateStr?: string): string => {
   }).format(d);
 };
 
+const formatExternalUrl = (url?: string | null): string => {
+  if (!url) return '#';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+};
+
 const formatSalaryRange = (min: number | null, max: number | null): string => {
-  if (!min && !max) return 'Tidak dicantumkan';
+  const hasMin = min !== null && min !== undefined && !isNaN(min);
+  const hasMax = max !== null && max !== undefined && !isNaN(max);
+
+  if (!hasMin && !hasMax) return 'Tidak dicantumkan';
 
   const formatIDR = (val: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
-  if (min && max) return `${formatIDR(min)} - ${formatIDR(max)}`;
-  if (min) return `Mulai ${formatIDR(min)}`;
-  if (max) return `Hingga ${formatIDR(max)}`;
+  if (hasMin && hasMax) return `${formatIDR(min)} - ${formatIDR(max)}`;
+  if (hasMin) return `Mulai ${formatIDR(min)}`;
+  if (hasMax) return `Hingga ${formatIDR(max)}`;
   return '-';
 };
 </script>

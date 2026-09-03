@@ -278,6 +278,25 @@ const handleSubmit = () => {
     return;
   }
 
-  emit('submit', { ...form.value });
+  if (
+    form.value.salary_range_min &&
+    form.value.salary_range_max &&
+    Number(form.value.salary_range_min) > Number(form.value.salary_range_max)
+  ) {
+    errorMessage.value = 'Estimasi gaji maksimum harus lebih besar atau sama dengan gaji minimum.';
+    return;
+  }
+
+  const payload = { ...form.value };
+  if (payload.job_url) {
+    const trimmed = payload.job_url.trim();
+    if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+      payload.job_url = `https://${trimmed}`;
+    } else {
+      payload.job_url = trimmed || null;
+    }
+  }
+
+  emit('submit', payload);
 };
 </script>

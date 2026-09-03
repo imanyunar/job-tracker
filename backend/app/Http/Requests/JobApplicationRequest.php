@@ -33,7 +33,17 @@ class JobApplicationRequest extends FormRequest
             'location' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
             'salary_range_min' => ['nullable', 'numeric', 'min:0'],
-            'salary_range_max' => ['nullable', 'numeric', 'min:0'],
+            'salary_range_max' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                function ($attribute, $value, $fail) {
+                    $min = $this->input('salary_range_min');
+                    if ($value !== null && $min !== null && (float)$value < (float)$min) {
+                        $fail('Estimasi gaji maksimum harus lebih besar atau sama dengan gaji minimum.');
+                    }
+                },
+            ],
         ];
     }
 
