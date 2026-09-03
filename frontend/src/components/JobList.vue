@@ -101,12 +101,12 @@
         v-else
         v-for="job in applications"
         :key="job.id"
-        @click="$emit('select-job', job)"
+        @click="handleJobSelect(job)"
         class="p-3.5 text-left transition-all duration-200 cursor-pointer border-l-[3.5px]"
         :class="[
           getStatusBorderClass(job.status),
-          selectedJobId === job.id
-            ? 'bg-[#E4E8E3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]'
+          (selectedId === job.id || selectedJobId === job.id)
+            ? 'bg-[#E4E8E3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] font-semibold'
             : 'bg-[#F3F4F0] hover:bg-[#ECEEEA]'
         ]"
       >
@@ -148,6 +148,7 @@ import type { JobApplication, JobStatus, JobStats } from '../types/job';
 
 const props = defineProps<{
   applications: JobApplication[];
+  selectedId?: number | null;
   selectedJobId?: number | null;
   loading: boolean;
   searchQuery: string;
@@ -156,13 +157,19 @@ const props = defineProps<{
   stats?: JobStats;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:searchQuery', value: string): void;
   (e: 'update:selectedStatus', value: string): void;
   (e: 'update:sortBy', value: string): void;
+  (e: 'select', job: JobApplication): void;
   (e: 'select-job', job: JobApplication): void;
   (e: 'open-create'): void;
 }>();
+
+const handleJobSelect = (job: JobApplication) => {
+  emit('select', job);
+  emit('select-job', job);
+};
 
 const statusTabs = computed(() => [
   { label: 'Semua', value: 'all', count: props.stats?.total },
