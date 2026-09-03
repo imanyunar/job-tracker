@@ -129,12 +129,34 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-[#C8D0CC]/60 bg-[#F3F4F0]">
-            <tr v-if="filteredUsers.length === 0">
+            <!-- Skeleton Rows -->
+            <tr v-if="loading" v-for="i in 5" :key="'user-skel-' + i" class="animate-pulse">
+              <td class="py-3.5 px-4 space-y-1.5">
+                <div class="h-3.5 w-32 rounded skeleton-shimmer"></div>
+                <div class="h-3 w-40 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-4 w-14 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-3.5 w-20 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <div class="h-4 w-8 rounded skeleton-shimmer mx-auto"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-3 w-20 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <div class="h-6 w-24 rounded skeleton-shimmer ml-auto"></div>
+              </td>
+            </tr>
+            <tr v-else-if="filteredUsers.length === 0">
               <td colspan="6" class="py-8 text-center text-[#5B6863]">
                 Tidak ada pengguna yang sesuai dengan filter.
               </td>
             </tr>
-            <tr v-for="u in filteredUsers" :key="u.id" class="hover:bg-[#ECEEEA]/70 transition-colors">
+            <tr v-else v-for="u in filteredUsers" :key="u.id" class="hover:bg-[#ECEEEA]/70 transition-colors">
               <td class="py-3 px-4">
                 <div class="font-semibold text-[#1C2B2A]">{{ u.name }}</div>
                 <div class="text-[11px] text-[#5B6863]">{{ u.email }}</div>
@@ -198,12 +220,32 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-[#C8D0CC]/60 bg-[#F3F4F0]">
-            <tr v-if="globalApps.length === 0">
+            <!-- Skeleton Rows -->
+            <tr v-if="loading" v-for="i in 5" :key="'app-skel-' + i" class="animate-pulse">
+              <td class="py-3.5 px-4 space-y-1.5">
+                <div class="h-3.5 w-28 rounded skeleton-shimmer"></div>
+                <div class="h-3 w-36 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4 space-y-1.5">
+                <div class="h-3.5 w-32 rounded skeleton-shimmer"></div>
+                <div class="h-3 w-24 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-4 w-16 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-3.5 w-20 rounded skeleton-shimmer"></div>
+              </td>
+              <td class="py-3.5 px-4">
+                <div class="h-3.5 w-24 rounded skeleton-shimmer"></div>
+              </td>
+            </tr>
+            <tr v-else-if="globalApps.length === 0">
               <td colspan="5" class="py-8 text-center text-[#5B6863]">
                 Belum ada data lamaran di sistem.
               </td>
             </tr>
-            <tr v-for="app in globalApps" :key="app.id" class="hover:bg-[#ECEEEA]/70 transition-colors">
+            <tr v-else v-for="app in globalApps" :key="app.id" class="hover:bg-[#ECEEEA]/70 transition-colors">
               <td class="py-3 px-4">
                 <div class="font-semibold text-[#1C2B2A]">{{ app.user?.name || 'User #' + app.user_id }}</div>
                 <div class="text-[11px] text-[#5B6863]">{{ app.user?.email || '-' }}</div>

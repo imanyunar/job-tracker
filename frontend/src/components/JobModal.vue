@@ -1,12 +1,16 @@
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
-  >
-    <div
-      class="bg-[#F3F4F0] border border-[#C8D0CC] rounded-xl shadow-2xl max-w-xl w-full overflow-hidden transition-all text-[#1C2B2A]"
-      @click.stop
-    >
+  <teleport to="body">
+    <transition name="modal-fade">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
+        @click="$emit('close')"
+      >
+        <transition name="modal-scale" appear>
+          <div
+            class="bg-[#F3F4F0] border border-[#C8D0CC] rounded-xl shadow-2xl max-w-xl w-full overflow-hidden transition-all text-[#1C2B2A] transform"
+            @click.stop
+          >
       <!-- Modal Header -->
       <div class="px-6 py-4 border-b border-[#C8D0CC] flex items-center justify-between bg-[#ECEEEA]">
         <div>
@@ -251,8 +255,11 @@
           </button>
         </div>
       </form>
-    </div>
-  </div>
+          </div>
+        </transition>
+      </div>
+    </transition>
+  </teleport>
 </template>
 
 <script setup lang="ts">

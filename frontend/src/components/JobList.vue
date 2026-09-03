@@ -73,12 +73,23 @@
     </div>
 
     <!-- Application List -->
-    <div class="flex-1 overflow-y-auto divide-y divide-[#C8D0CC]/60">
-      <div v-if="loading" class="p-8 text-center text-[#5B6863] text-sm">
-        <div class="inline-block animate-spin w-5 h-5 border-2 border-[#1C2B2A] border-t-transparent rounded-full mb-2"></div>
-        <p>Memuat daftar lamaran...</p>
+    <div class="flex-1 overflow-y-auto">
+      <!-- Loading Skeleton Cards -->
+      <div v-if="loading" class="divide-y divide-[#C8D0CC]/60">
+        <div v-for="i in 5" :key="i" class="p-3.5 space-y-2.5 border-l-[3.5px] border-transparent animate-pulse">
+          <div class="flex items-start justify-between gap-3">
+            <div class="h-4 w-32 rounded skeleton-shimmer"></div>
+            <div class="h-4 w-16 rounded skeleton-shimmer"></div>
+          </div>
+          <div class="h-3.5 w-44 rounded skeleton-shimmer"></div>
+          <div class="flex items-center justify-between pt-1">
+            <div class="h-3 w-20 rounded skeleton-shimmer"></div>
+            <div class="h-3 w-16 rounded skeleton-shimmer"></div>
+          </div>
+        </div>
       </div>
 
+      <!-- Empty State -->
       <div
         v-else-if="applications.length === 0"
         class="p-8 text-center text-[#5B6863] text-xs sm:text-sm space-y-2"
@@ -90,54 +101,61 @@
           <p>Belum ada lamaran tercatat. Mulai dari yang pertama kamu kirim minggu ini.</p>
           <button
             @click="$emit('open-create')"
-            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#1C2B2A] bg-[#ECEEEA] hover:bg-[#E4E8E3] border border-[#C8D0CC] rounded cursor-pointer"
+            class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[#1C2B2A] bg-[#ECEEEA] hover:bg-[#E4E8E3] border border-[#C8D0CC] rounded cursor-pointer transition-colors"
           >
             + Tambah lamaran pertama
           </button>
         </div>
       </div>
 
-      <div
+      <!-- TransitionGroup List -->
+      <TransitionGroup
         v-else
-        v-for="job in applications"
-        :key="job.id"
-        @click="handleJobSelect(job)"
-        class="p-3.5 text-left transition-all duration-200 cursor-pointer border-l-[3.5px]"
-        :class="[
-          getStatusBorderClass(job.status),
-          (selectedId === job.id || selectedJobId === job.id)
-            ? 'bg-[#E4E8E3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] font-semibold'
-            : 'bg-[#F3F4F0] hover:bg-[#ECEEEA]'
-        ]"
+        name="job-card"
+        tag="div"
+        class="divide-y divide-[#C8D0CC]/60 relative"
       >
-        <div class="flex items-start justify-between gap-2">
-          <h3 class="text-sm font-semibold text-[#1C2B2A] leading-snug line-clamp-1">
-            {{ job.company_name }}
-          </h3>
-          <span
-            class="text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
-            :class="getStatusBadgeClass(job.status)"
-          >
-            {{ formatStatus(job.status) }}
-          </span>
-        </div>
+        <div
+          v-for="job in applications"
+          :key="job.id"
+          @click="handleJobSelect(job)"
+          class="p-3.5 text-left transition-all duration-200 cursor-pointer border-l-[3.5px] hover:translate-x-0.5"
+          :class="[
+            getStatusBorderClass(job.status),
+            (selectedId === job.id || selectedJobId === job.id)
+              ? 'bg-[#E4E8E3] shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] font-semibold'
+              : 'bg-[#F3F4F0] hover:bg-[#ECEEEA]'
+          ]"
+        >
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-sm font-semibold text-[#1C2B2A] leading-snug line-clamp-1">
+              {{ job.company_name }}
+            </h3>
+            <span
+              class="text-[11px] font-medium px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 transition-colors"
+              :class="getStatusBadgeClass(job.status)"
+            >
+              {{ formatStatus(job.status) }}
+            </span>
+          </div>
 
-        <div class="text-xs text-[#5B6863] mt-1 line-clamp-1 font-medium">
-          {{ job.position }}
-        </div>
+          <div class="text-xs text-[#5B6863] mt-1 line-clamp-1 font-medium">
+            {{ job.position }}
+          </div>
 
-        <div class="flex items-center justify-between text-[11px] text-[#82918B] mt-2">
-          <span class="flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {{ formatDate(job.applied_date) }}
-          </span>
-          <span v-if="job.location" class="truncate max-w-[120px]">
-            {{ job.location }}
-          </span>
+          <div class="flex items-center justify-between text-[11px] text-[#82918B] mt-2">
+            <span class="flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {{ formatDate(job.applied_date) }}
+            </span>
+            <span v-if="job.location" class="truncate max-w-[120px]">
+              {{ job.location }}
+            </span>
+          </div>
         </div>
-      </div>
+      </TransitionGroup>
     </div>
   </div>
 </template>

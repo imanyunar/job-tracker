@@ -25,7 +25,7 @@
             <!-- View 1: My Applications Tracker (Dual-Panel) -->
             <div v-if="currentView === 'tracker'" key="tracker" class="space-y-5">
               <!-- Summary Metrics Cards -->
-              <JobStats :stats="stats" />
+              <JobStats :stats="stats" :loading="loadingStats" />
 
               <!-- Dual Panel Layout -->
               <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -131,6 +131,7 @@ const {
   selectedJob,
   stats,
   loading,
+  loadingStats,
   submitting,
   searchQuery,
   selectedStatus,
