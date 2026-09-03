@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\JobApplicationRequest;
 use App\Models\JobApplication;
+use App\Services\JobUrlParserService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -219,5 +220,22 @@ class JobApplicationController extends Controller
 
             fclose($file);
         }, 200, $headers);
+    }
+
+    /**
+     * Parse a job posting URL and extract structured job details.
+     */
+    public function parseUrl(Request $request, JobUrlParserService $parserService): JsonResponse
+    {
+        $request->validate([
+            'url' => ['required', 'string', 'max:1000'],
+        ], [
+            'url.required' => 'Tautan lowongan wajib diisi.',
+        ]);
+
+        $url = $request->input('url');
+        $extracted = $parserService->parse($url);
+
+        return $this->successResponse($extracted, 'Data lowongan berhasil dianalisis.');
     }
 }

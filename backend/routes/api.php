@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('job-applications')->group(function () {
         Route::get('/stats', [JobApplicationController::class, 'stats']);
         Route::get('/export', [JobApplicationController::class, 'export']);
+        Route::post('/parse-url', [JobApplicationController::class, 'parseUrl']);
         Route::get('/', [JobApplicationController::class, 'index']);
         Route::post('/', [JobApplicationController::class, 'store']);
         Route::get('/{id}', [JobApplicationController::class, 'show']);

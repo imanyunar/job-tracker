@@ -31,8 +31,57 @@
       <!-- Form Body -->
       <form @submit.prevent="handleSubmit" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
         <!-- Error Alert -->
-        <div v-if="errorMessage" class="bg-[#F8EFEF] border border-[#8B5A5A]/30 text-[#8B5A5A] px-4 py-2.5 rounded text-xs">
-          {{ errorMessage }}
+        <div v-if="errorMessage" class="bg-[#F8EFEF] border border-[#8B5A5A]/30 text-[#8B5A5A] px-4 py-2.5 rounded-lg text-xs flex items-center justify-between">
+          <span>{{ errorMessage }}</span>
+          <button type="button" @click="errorMessage = ''" class="font-bold text-xs hover:text-[#1C2B2A] ml-2">✕</button>
+        </div>
+
+        <!-- Quick Auto-Fill URL Bar -->
+        <div class="bg-[#ECEEEA] border border-[#C8D0CC] rounded-xl p-3.5 space-y-2">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs">
+            <span class="flex items-center gap-1.5 font-bold text-[#1C2B2A]">
+              <span class="text-[#B8752F]">⚡</span>
+              <span>Isi Otomatis dari Link Lowongan</span>
+            </span>
+            <span class="text-[11px] text-[#5B6863]">LinkedIn, Jobstreet, Glints, Indeed, dll.</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <input
+                v-model="quickUrlInput"
+                type="url"
+                placeholder="Tempel tautan lowongan di sini..."
+                @keydown.enter.prevent="handleParseUrl"
+                :disabled="parsingUrl"
+                class="w-full pl-8 pr-3 py-2 text-xs bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] placeholder-[#82918B] focus:outline-none focus:border-[#1C2B2A]"
+              />
+              <svg class="w-3.5 h-3.5 text-[#82918B] absolute left-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
+              </svg>
+            </div>
+
+            <button
+              type="button"
+              @click="handleParseUrl"
+              :disabled="parsingUrl || !quickUrlInput.trim()"
+              class="px-3.5 py-2 text-xs font-semibold text-white bg-[#1C2B2A] hover:bg-[#2B3E3C] active:bg-[#14201F] rounded-lg shadow-2xs transition-all disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <svg v-if="parsingUrl" class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>{{ parsingUrl ? 'Menganalisis...' : 'Ekstrak Data' }}</span>
+            </button>
+          </div>
+
+          <!-- Parse Success Banner -->
+          <transition name="fade-slide">
+            <div v-if="parseSuccessMsg" class="text-[11px] text-[#2E6B4D] font-semibold flex items-center gap-1 pt-0.5">
+              <span>✓</span>
+              <span>{{ parseSuccessMsg }}</span>
+            </div>
+          </transition>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -209,6 +258,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import type { JobApplication, JobFormPayload, JobStatus } from '../types/job';
+import { jobApi } from '../services/api';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -223,6 +273,9 @@ const emit = defineEmits<{
 
 const isEditing = ref(false);
 const errorMessage = ref('');
+const quickUrlInput = ref('');
+const parsingUrl = ref(false);
+const parseSuccessMsg = ref('');
 
 const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -241,10 +294,50 @@ const initialForm = (): JobFormPayload => ({
 
 const form = ref<JobFormPayload>(initialForm());
 
+const handleParseUrl = async () => {
+  const url = quickUrlInput.value.trim();
+  if (!url) return;
+
+  errorMessage.value = '';
+  parseSuccessMsg.value = '';
+  parsingUrl.value = true;
+
+  try {
+    const res = await jobApi.parseJobUrl(url);
+    if (res.data) {
+      const d = res.data;
+      if (d.company_name) form.value.company_name = d.company_name;
+      if (d.position) form.value.position = d.position;
+      if (d.source) form.value.source = d.source;
+      if (d.location) form.value.location = d.location;
+      if (d.job_url) form.value.job_url = d.job_url;
+      if (d.salary_range_min !== null && d.salary_range_min !== undefined) {
+        form.value.salary_range_min = d.salary_range_min;
+      }
+      if (d.salary_range_max !== null && d.salary_range_max !== undefined) {
+        form.value.salary_range_max = d.salary_range_max;
+      }
+      if (d.notes) {
+        form.value.notes = d.notes;
+      }
+
+      const platformText = d.source ? `dari ${d.source}` : '';
+      parseSuccessMsg.value = `Data lowongan ${platformText} berhasil diisi otomatis! Silakan tinjau dan lengkapi.`;
+    }
+  } catch (err: any) {
+    const msg = err.response?.data?.message || 'Gagal mengekstrak data dari link lowongan.';
+    errorMessage.value = msg;
+  } finally {
+    parsingUrl.value = false;
+  }
+};
+
 watch(
   () => props.isOpen,
   (val) => {
     errorMessage.value = '';
+    parseSuccessMsg.value = '';
+    quickUrlInput.value = '';
     if (val) {
       if (props.jobToEdit) {
         isEditing.value = true;

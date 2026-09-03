@@ -83,6 +83,18 @@ export interface JobFormPayload {
   salary_range_max?: number | null;
 }
 
+export interface ParsedJobData {
+  company_name?: string | null;
+  position?: string | null;
+  status?: JobStatus;
+  source?: string | null;
+  location?: string | null;
+  job_url?: string | null;
+  salary_range_min?: number | null;
+  salary_range_max?: number | null;
+  notes?: string | null;
+}
+
 export interface JobStats {
   total: number;
   active_in_process: number;

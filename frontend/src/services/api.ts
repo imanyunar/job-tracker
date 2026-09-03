@@ -12,6 +12,7 @@ import type {
   ProfileUpdatePayload,
   ChangePasswordPayload,
   AdminStats,
+  ParsedJobData,
 } from '../types/job';
 
 const TOKEN_KEY = 'job_tracker_token';
@@ -143,6 +144,11 @@ export const jobApi = {
 
   async deleteApplication(id: number): Promise<ApiResponse<null>> {
     const response = await apiClient.delete<ApiResponse<null>>(`/job-applications/${id}`);
+    return response.data;
+  },
+
+  async parseJobUrl(url: string): Promise<ApiResponse<ParsedJobData>> {
+    const response = await apiClient.post<ApiResponse<ParsedJobData>>('/job-applications/parse-url', { url });
     return response.data;
   },
 
