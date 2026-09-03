@@ -137,6 +137,34 @@ export function useJobs() {
     }
   };
 
+  const resetState = () => {
+    applications.value = [];
+    selectedJob.value = null;
+    stats.value = {
+      total: 0,
+      active_in_process: 0,
+      positive_rate_percent: 0,
+      by_status: {
+        applied: 0,
+        screening: 0,
+        interview: 0,
+        offer: 0,
+        rejected: 0,
+        accepted: 0,
+      },
+    };
+    searchQuery.value = '';
+    selectedStatus.value = 'all';
+    sortBy.value = 'applied_date';
+  };
+
+  // Listen to unauthorized event to immediately clear cache
+  if (typeof window !== 'undefined') {
+    window.addEventListener('auth:unauthorized', () => {
+      resetState();
+    });
+  }
+
   // Watch filter & search changes with debounce
   watch([searchQuery], () => {
     if (debounceTimer) clearTimeout(debounceTimer);
@@ -167,5 +195,6 @@ export function useJobs() {
     updateJob,
     changeStatus,
     deleteJob,
+    resetState,
   };
 }

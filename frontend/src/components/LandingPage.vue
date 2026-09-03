@@ -183,33 +183,6 @@
       </div>
     </section>
 
-    <!-- Horizontal Category Marquee Ticker -->
-    <div class="w-full bg-[#ECEEEA] border-y border-[#C8D0CC] py-3 overflow-hidden relative">
-      <div class="flex items-center gap-8 whitespace-nowrap animate-ticker text-xs font-semibold text-[#5B6863] uppercase tracking-wider">
-        <span>🚀 Tech Startups</span>
-        <span>•</span>
-        <span>💼 Enterprise Companies</span>
-        <span>•</span>
-        <span>🌍 Global Remote Opportunities</span>
-        <span>•</span>
-        <span>🏦 FinTech & Banking</span>
-        <span>•</span>
-        <span>🎨 Creative & Design Agencies</span>
-        <span>•</span>
-        <span>⚡ Software Engineering Roles</span>
-        <span>•</span>
-        <span>🚀 Tech Startups</span>
-        <span>•</span>
-        <span>💼 Enterprise Companies</span>
-        <span>•</span>
-        <span>🌍 Global Remote Opportunities</span>
-        <span>•</span>
-        <span>🏦 FinTech & Banking</span>
-        <span>•</span>
-        <span>🎨 Creative & Design Agencies</span>
-      </div>
-    </div>
-
     <!-- Features Section with Magnetic Hover Cards -->
     <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
       <div class="text-center max-w-2xl mx-auto mb-14">
@@ -276,8 +249,35 @@
       </div>
     </section>
 
+    <!-- Horizontal Category Marquee Ticker (Placed at the bottom before footer) -->
+    <div class="w-full bg-[#ECEEEA]/90 border-y border-[#C8D0CC] py-3 overflow-hidden relative z-10">
+      <div class="flex items-center gap-8 whitespace-nowrap animate-ticker text-xs font-semibold text-[#5B6863] uppercase tracking-wider">
+        <span>🚀 Tech Startups</span>
+        <span>•</span>
+        <span>💼 Enterprise Companies</span>
+        <span>•</span>
+        <span>🌍 Global Remote Opportunities</span>
+        <span>•</span>
+        <span>🏦 FinTech & Banking</span>
+        <span>•</span>
+        <span>🎨 Creative & Design Agencies</span>
+        <span>•</span>
+        <span>⚡ Software Engineering Roles</span>
+        <span>•</span>
+        <span>🚀 Tech Startups</span>
+        <span>•</span>
+        <span>💼 Enterprise Companies</span>
+        <span>•</span>
+        <span>🌍 Global Remote Opportunities</span>
+        <span>•</span>
+        <span>🏦 FinTech & Banking</span>
+        <span>•</span>
+        <span>🎨 Creative & Design Agencies</span>
+      </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="mt-auto border-t border-[#C8D0CC] py-8 text-center text-xs text-[#5B6863] bg-[#ECEEEA]/60">
+    <footer class="border-t border-[#C8D0CC] py-8 text-center text-xs text-[#5B6863] bg-[#ECEEEA]/60">
       <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="font-display font-bold text-[#1C2B2A] text-sm">
           Job Application Tracker

@@ -142,6 +142,7 @@ const {
   updateJob,
   changeStatus,
   deleteJob,
+  resetState: resetJobsState,
 } = useJobs();
 
 const toastRef = ref<InstanceType<typeof Toast> | null>(null);
@@ -215,6 +216,8 @@ const handleAuthSuccess = async () => {
 
 const handleLogout = async () => {
   await logout();
+  resetJobsState();
+  currentView.value = 'tracker';
   toastRef.value?.show('Berhasil keluar dari akun.', 'info');
 };
 
