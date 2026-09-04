@@ -67,8 +67,19 @@
               </div>
             </div>
 
-            <!-- Quick Status Changer Dropdown -->
+            <!-- Quick Status Changer Dropdown & Scan Email Shortcut -->
             <div class="flex items-center gap-2">
+              <button
+                @click="$emit('scan-email-for-job', job.id)"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-[#C8D0CC] bg-[#FFFFFF] hover:bg-[#ECEEEA] text-[#1C2B2A] shadow-2xs transition-colors cursor-pointer"
+                title="Pindai email recruiter terkait lamaran ini"
+              >
+                <svg class="w-3.5 h-3.5 text-[#B8752F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Scan Email</span>
+              </button>
+
               <label for="detail-status-select" class="sr-only">Ubah status</label>
               <div class="relative">
                 <select
@@ -205,6 +216,7 @@ const emit = defineEmits<{
   (e: 'edit', job: JobApplication): void;
   (e: 'delete', job: JobApplication): void;
   (e: 'open-create'): void;
+  (e: 'scan-email-for-job', id: number): void;
 }>();
 
 const onStatusChange = (newStatus: JobStatus) => {

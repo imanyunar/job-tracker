@@ -148,3 +148,64 @@ export interface JobFilter {
   per_page?: string | number;
   page?: number;
 }
+
+export interface EmailParsePayload {
+  content: string;
+  subject?: string;
+  sender?: string;
+  application_id?: number;
+}
+
+export interface EmailParseResult {
+  success: boolean;
+  status: JobStatus;
+  confidence: 'high' | 'medium' | 'low';
+  confidence_score: number;
+  status_label: string;
+  current_status: JobStatus;
+  status_changed: boolean;
+  detected_company?: string | null;
+  matched_application?: {
+    id: number;
+    company_name: string;
+    position: string;
+    status: JobStatus;
+    applied_date?: string;
+  } | null;
+  matched_confidence: 'high' | 'medium' | 'low';
+  meeting_link?: string | null;
+  meeting_datetime?: string | null;
+  detected_keywords: string[];
+  excerpt: string;
+  suggested_note: string;
+}
+
+export interface EmailApplyPayload {
+  application_id: number;
+  status: JobStatus;
+  notes?: string;
+  append_note?: boolean;
+}
+
+export interface GmailSyncStatus {
+  is_connected: boolean;
+  is_token_expired: boolean;
+  google_email?: string | null;
+  last_synced_at?: string | null;
+  has_client_config: boolean;
+}
+
+export interface GmailScanResultItem {
+  id: string;
+  subject: string;
+  sender: string;
+  date: string;
+  analysis: EmailParseResult;
+}
+
+export interface GmailScanResponse {
+  scanned_count: number;
+  results: GmailScanResultItem[];
+  last_synced_at: string;
+}
+

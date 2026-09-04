@@ -34,6 +34,18 @@
           </button>
 
           <button
+            @click="$emit('open-email-sync')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#1C2B2A] bg-[#F3F4F0] hover:bg-[#ECEEEA] active:bg-[#E4E8E3] border border-[#C8D0CC] rounded-lg transition-colors cursor-pointer group"
+            title="Pindai email recruiter untuk auto-update status"
+          >
+            <svg class="w-3.5 h-3.5 text-[#B8752F] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Scan Email
+            <span class="w-1.5 h-1.5 rounded-full bg-[#B8752F]"></span>
+          </button>
+
+          <button
             @click="$emit('open-create')"
             class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium text-[#F3F4F0] bg-[#1C2B2A] hover:bg-[#2B3E3C] active:bg-[#14201F] rounded-lg shadow-xs transition-colors cursor-pointer"
           >
@@ -117,6 +129,7 @@ defineEmits<{
   (e: 'open-create'): void;
   (e: 'logout'): void;
   (e: 'export-csv'): void;
+  (e: 'open-email-sync'): void;
 }>();
 
 const getInitials = (name?: string): string => {

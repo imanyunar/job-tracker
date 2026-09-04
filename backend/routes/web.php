@@ -2,7 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+// Serve Vue 3 SPA frontend if built into public/index.html, otherwise serve API info
+Route::get('/{any?}', function () {
+    $indexPath = public_path('index.html');
+    if (file_exists($indexPath)) {
+        return response()->file($indexPath);
+    }
+
     return response()->json([
         'app' => 'Job Application Tracker API',
         'status' => 'online',
@@ -13,4 +19,5 @@ Route::get('/', function () {
             'export' => '/api/job-applications/export',
         ],
     ]);
-});
+})->where('any', '^(?!api).*$');
+

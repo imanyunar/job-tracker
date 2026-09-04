@@ -115,7 +115,7 @@ class AuthController extends Controller
      */
     public function linkedinCallback(): RedirectResponse
     {
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = rtrim(env('FRONTEND_URL', env('APP_URL', 'https://job-tracker.anythingforlove.my.id')), '/');
 
         try {
             /** @var \Laravel\Socialite\Two\AbstractProvider $driver */

@@ -13,6 +13,11 @@ import type {
   ChangePasswordPayload,
   AdminStats,
   ParsedJobData,
+  EmailParsePayload,
+  EmailParseResult,
+  EmailApplyPayload,
+  GmailSyncStatus,
+  GmailScanResponse,
 } from '../types/job';
 
 const TOKEN_KEY = 'job_tracker_token';
@@ -179,9 +184,43 @@ export const adminApi = {
   },
 };
 
+export const emailSyncApi = {
+  async parseEmail(data: EmailParsePayload): Promise<ApiResponse<EmailParseResult>> {
+    const response = await apiClient.post<ApiResponse<EmailParseResult>>('/email-sync/parse', data);
+    return response.data;
+  },
+
+  async applyUpdate(data: EmailApplyPayload): Promise<ApiResponse<{ application: JobApplication; old_status: string; new_status: string }>> {
+    const response = await apiClient.post<ApiResponse<{ application: JobApplication; old_status: string; new_status: string }>>('/email-sync/apply', data);
+    return response.data;
+  },
+
+  async getGmailStatus(): Promise<ApiResponse<GmailSyncStatus>> {
+    const response = await apiClient.get<ApiResponse<GmailSyncStatus>>('/email-sync/gmail/status');
+    return response.data;
+  },
+
+  getGoogleRedirectUrl(): string {
+    const token = localStorage.getItem(TOKEN_KEY);
+    return `/api/auth/google/redirect${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  },
+
+  async disconnectGmail(): Promise<ApiResponse<null>> {
+    const response = await apiClient.post<ApiResponse<null>>('/email-sync/gmail/disconnect');
+    return response.data;
+  },
+
+  async scanGmail(): Promise<ApiResponse<GmailScanResponse>> {
+    const response = await apiClient.post<ApiResponse<GmailScanResponse>>('/email-sync/gmail/scan');
+    return response.data;
+  },
+};
+
 export default {
   auth: authApi,
   profile: profileApi,
   jobs: jobApi,
   admin: adminApi,
+  emailSync: emailSyncApi,
 };
+

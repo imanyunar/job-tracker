@@ -15,6 +15,7 @@
           :current-view="currentView"
           @update:current-view="currentView = $event"
           @open-create="openCreateModal"
+          @open-email-sync="openEmailSyncModal(null)"
           @logout="handleLogout"
           @export-csv="handleExportCsv"
         />
@@ -56,6 +57,7 @@
                     @delete="openDeleteModal"
                     @status-change="handleStatusChange"
                     @open-create="openCreateModal"
+                    @scan-email-for-job="openEmailSyncModal($event)"
                   />
                 </div>
               </div>
@@ -98,6 +100,16 @@
         @close="isDeleteModalOpen = false"
         @confirm="handleConfirmDelete"
       />
+
+      <!-- Email Sync & Scraping Modal -->
+      <EmailSyncModal
+        :is-open="isEmailSyncModalOpen"
+        :applications="applications"
+        :preselected-app-id="preselectedEmailAppId"
+        @close="isEmailSyncModalOpen = false"
+        @applied="handleEmailApplied"
+        @show-toast="(msg, type) => toastRef?.show(msg, type)"
+      />
     </div>
 
     <!-- Global Toast Notifications (Always mounted) -->
@@ -119,6 +131,7 @@ import JobList from './components/JobList.vue';
 import JobDetail from './components/JobDetail.vue';
 import JobModal from './components/JobModal.vue';
 import DeleteConfirmModal from './components/DeleteConfirmModal.vue';
+import EmailSyncModal from './components/EmailSyncModal.vue';
 import ProfileView from './components/ProfileView.vue';
 import AdminView from './components/AdminView.vue';
 import Toast from './components/Toast.vue';
@@ -154,6 +167,22 @@ const jobToEdit = ref<JobApplication | null>(null);
 
 const isDeleteModalOpen = ref(false);
 const jobToDelete = ref<JobApplication | null>(null);
+
+const isEmailSyncModalOpen = ref(false);
+const preselectedEmailAppId = ref<number | null>(null);
+
+const openEmailSyncModal = (preselectedId: number | null = null) => {
+  preselectedEmailAppId.value = preselectedId;
+  isEmailSyncModalOpen.value = true;
+};
+
+const handleEmailApplied = async (payload: { application: JobApplication; message: string }) => {
+  await fetchApplications();
+  await fetchStats();
+  if (payload.application) {
+    selectJob(payload.application);
+  }
+};
 
 const sanitizeErrorMessage = (raw: string): string => {
   if (!raw) return 'Terjadi kendala pada sistem. Silakan coba beberapa saat lagi.';

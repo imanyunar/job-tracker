@@ -31,6 +31,12 @@ class User extends Authenticatable
         'preferred_location',
         'linkedin_id',
         'avatar',
+        'google_id',
+        'google_email',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expires_at',
+        'last_gmail_synced_at',
     ];
 
     /**
@@ -41,6 +47,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -55,7 +63,17 @@ class User extends Authenticatable
             'password' => 'hashed',
             'target_salary_min' => 'float',
             'target_salary_max' => 'float',
+            'google_token_expires_at' => 'datetime',
+            'last_gmail_synced_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if user has connected their Google / Gmail account.
+     */
+    public function hasGoogleConnected(): bool
+    {
+        return !empty($this->google_access_token) || !empty($this->google_refresh_token);
     }
 
     /**

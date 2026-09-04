@@ -38,7 +38,16 @@ return [
     'linkedin-openid' => [
         'client_id' => env('LINKEDIN_CLIENT_ID'),
         'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
-        'redirect' => env('LINKEDIN_REDIRECT_URI', 'http://localhost:8000/api/auth/linkedin/callback'),
+        'redirect' => env('LINKEDIN_REDIRECT_URI', rtrim(env('APP_URL', 'https://job-tracker.anythingforlove.my.id'), '/') . '/api/auth/linkedin/callback'),
+        'guzzle' => [
+            'verify' => env('APP_ENV') === 'production',
+        ],
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', rtrim(env('APP_URL', 'https://job-tracker.anythingforlove.my.id'), '/') . '/api/auth/google/callback'),
         'guzzle' => [
             'verify' => env('APP_ENV') === 'production',
         ],

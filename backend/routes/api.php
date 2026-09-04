@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EmailSyncController;
 use App\Http\Controllers\Api\JobApplicationController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,10 @@ Route::prefix('auth')->group(function () {
     // LinkedIn OAuth
     Route::get('/linkedin/redirect', [AuthController::class, 'linkedinRedirect']);
     Route::get('/linkedin/callback', [AuthController::class, 'linkedinCallback']);
+
+    // Google / Gmail OAuth Redirect & Callback
+    Route::get('/google/redirect', [EmailSyncController::class, 'googleRedirect']);
+    Route::get('/google/callback', [EmailSyncController::class, 'googleCallback']);
 });
 
 // Protected Endpoints (Requires Sanctum Bearer Token)
@@ -42,6 +47,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{id}', [JobApplicationController::class, 'update']);
         Route::patch('/{id}/status', [JobApplicationController::class, 'updateStatus']);
         Route::delete('/{id}', [JobApplicationController::class, 'destroy']);
+    });
+
+    // Email Scraping & Status Sync
+    Route::prefix('email-sync')->group(function () {
+        Route::post('/parse', [EmailSyncController::class, 'parseEmail']);
+        Route::post('/apply', [EmailSyncController::class, 'applyUpdate']);
+        Route::get('/gmail/status', [EmailSyncController::class, 'getGmailStatus']);
+        Route::get('/gmail/redirect', [EmailSyncController::class, 'googleRedirect']);
+        Route::post('/gmail/disconnect', [EmailSyncController::class, 'disconnectGmail']);
+        Route::post('/gmail/scan', [EmailSyncController::class, 'scanGmail']);
     });
 
     // Admin Restricted Endpoints

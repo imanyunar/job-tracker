@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Rounded Base Icon Background -->
+  <rect width="512" height="512" rx="120" fill="#1C2B2A"/>
+  
+  <!-- Subtle Elegant Inner Border -->
+  <rect x="20" y="20" width="472" height="472" rx="106" stroke="#5B6863" stroke-width="2" stroke-opacity="0.3"/>
+  
+  <!-- Modern Briefcase Handle -->
+  <path d="M184 176V132C184 112.118 200.118 96 220 96H292C311.882 96 328 112.118 328 132V176" stroke="#B8752F" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Briefcase Main Body -->
+  <rect x="88" y="176" width="336" height="240" rx="36" fill="#F3F4F0" stroke="#C8D0CC" stroke-width="12"/>
+  
+  <!-- Clean Flap Arch Cut -->
+  <path d="M88 236C180 290 332 290 424 236" stroke="#1C2B2A" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Center Clasp Lock -->
+  <rect x="234" y="246" width="44" height="52" rx="10" fill="#B8752F"/>
+  <circle cx="256" cy="272" r="7" fill="#F3F4F0"/>
+  
+  <!-- Bottom Accent Line -->
+  <line x1="140" y1="360" x2="372" y2="360" stroke="#C8D0CC" stroke-width="8" stroke-linecap="round"/>
+</svg>
