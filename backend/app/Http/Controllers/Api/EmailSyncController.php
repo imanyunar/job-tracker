@@ -127,6 +127,42 @@ class EmailSyncController extends Controller
     }
 
     /**
+     * Create a brand new job application directly from parsed email data.
+     */
+    public function createApplication(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'company_name' => ['required', 'string', 'max:255'],
+            'position' => ['required', 'string', 'max:255'],
+            'status' => ['required', 'string', 'in:applied,screening,interview,offer,rejected,accepted'],
+            'applied_date' => ['required', 'date'],
+            'source' => ['nullable', 'string', 'max:100'],
+            'job_url' => ['nullable', 'string', 'max:500'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:10000'],
+            'salary_range_min' => ['nullable', 'numeric', 'min:0'],
+            'salary_range_max' => ['nullable', 'numeric', 'min:0'],
+        ], [
+            'company_name.required' => 'Nama perusahaan wajib diisi.',
+            'position.required' => 'Posisi pekerjaan wajib diisi.',
+            'status.required' => 'Status lamaran wajib ditentukan.',
+            'applied_date.required' => 'Tanggal lamaran wajib ditentukan.',
+        ]);
+
+        $user = $request->user();
+        $validated['user_id'] = $user->id;
+        $validated['source'] = $validated['source'] ?? 'Email Scraping';
+
+        $application = JobApplication::create($validated);
+
+        return $this->successResponse(
+            $application,
+            "Lamaran baru di {$application->company_name} ({$application->position}) berhasil dicatat dari email!",
+            201
+        );
+    }
+
+    /**
      * Get Gmail connection status for the authenticated user.
      */
     public function getGmailStatus(Request $request): JsonResponse

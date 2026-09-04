@@ -264,56 +264,178 @@
                   </div>
                 </div>
 
-                <!-- Suggested Note Editor -->
-                <div>
-                  <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">
-                    Catatan yang akan ditambahkan ke logbook:
-                  </label>
-                  <textarea
-                    v-model="customNote"
-                    rows="2"
-                    class="w-full text-xs p-2.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:outline-none focus:ring-1 focus:ring-[#1C2B2A]"
-                  ></textarea>
+                <!-- Action Mode Segmented Toggle -->
+                <div class="pt-1">
+                  <div class="border border-[#C8D0CC] rounded-xl overflow-hidden bg-[#ECEEEA] p-1 flex gap-1">
+                    <button
+                      type="button"
+                      @click="actionMode = 'create'"
+                      class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      :class="actionMode === 'create' ? 'bg-[#1C2B2A] text-[#F3F4F0] shadow-2xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>➕ Buat Lamaran Baru</span>
+                    </button>
+                    <button
+                      type="button"
+                      @click="actionMode = 'update'"
+                      class="flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      :class="actionMode === 'update' ? 'bg-[#1C2B2A] text-[#F3F4F0] shadow-2xs' : 'text-[#5B6863] hover:text-[#1C2B2A]'"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span>🔄 Perbarui Lamaran yang Ada</span>
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Target Job Confirmation Dropdown if not matched -->
-                <div v-if="!analysisResult.matched_application">
-                  <label class="block text-xs font-semibold text-[#8B5A5A] mb-1">
-                    ⚠️ Pilih lamaran yang ingin diperbarui:
-                  </label>
-                  <select
-                    v-model="fallbackAppId"
-                    class="w-full text-xs px-3 py-2 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
-                  >
-                    <option :value="null">-- Pilih Salah Satu Lamaran Pekerjaan --</option>
-                    <option v-for="app in applications" :key="app.id" :value="app.id">
-                      {{ app.company_name }} - {{ app.position }} (Saat ini: {{ app.status }})
-                    </option>
-                  </select>
-                </div>
+                <!-- ACTION MODE 1: BUAT LAMARAN BARU -->
+                <div v-if="actionMode === 'create'" class="space-y-3 p-3.5 bg-[#F9FAF8] border border-[#C8D0CC] rounded-xl shadow-2xs">
+                  <div class="flex items-center justify-between pb-1 border-b border-[#ECEEEA]">
+                    <span class="text-xs font-bold text-[#1C2B2A] flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-[#2E6F40]"></span>
+                      Data Lamaran Baru Otomatis dari Email
+                    </span>
+                    <span class="text-[10px] text-[#5B6863]">Bisa disesuaikan sebelum disimpan</span>
+                  </div>
 
-                <!-- Apply Update Button -->
-                <div class="pt-2">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Nama Perusahaan *</label>
+                      <input
+                        v-model="newAppCompany"
+                        type="text"
+                        placeholder="Contoh: Shopee, Tokopedia, BCA"
+                        class="w-full text-xs px-2.5 py-1.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Posisi / Jabatan *</label>
+                      <input
+                        v-model="newAppPosition"
+                        type="text"
+                        placeholder="Contoh: Frontend Developer"
+                        class="w-full text-xs px-2.5 py-1.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Status Awal</label>
+                      <select
+                        v-model="newAppStatus"
+                        class="w-full text-xs px-2.5 py-1.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                      >
+                        <option value="applied">Applied (Terkirim)</option>
+                        <option value="screening">Screening / Tes</option>
+                        <option value="interview">Interview</option>
+                        <option value="offer">Offer / Penawaran</option>
+                        <option value="rejected">Ditolak / Selesai</option>
+                        <option value="accepted">Diterima</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Tanggal Lamar</label>
+                      <input
+                        v-model="newAppDate"
+                        type="date"
+                        class="w-full text-xs px-2.5 py-1.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Lokasi (Opsional)</label>
+                    <input
+                      v-model="newAppLocation"
+                      type="text"
+                      placeholder="Contoh: Jakarta / Remote"
+                      class="w-full text-xs px-2.5 py-1.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">Catatan Logbook:</label>
+                    <textarea
+                      v-model="customNote"
+                      rows="2"
+                      class="w-full text-xs p-2.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:outline-none focus:ring-1 focus:ring-[#1C2B2A]"
+                    ></textarea>
+                  </div>
+
                   <button
                     type="button"
-                    @click="applyStatusUpdate"
-                    :disabled="isApplying || (!analysisResult.matched_application && !fallbackAppId)"
-                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#2E6F40] hover:bg-[#235832] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-colors cursor-pointer"
+                    @click="handleCreateApplication"
+                    :disabled="isCreatingApp || !newAppCompany.trim() || !newAppPosition.trim()"
+                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#1C2B2A] hover:bg-[#2B3E3C] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
-                    <svg
-                      v-if="isApplying"
-                      class="w-4 h-4 animate-spin"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg v-if="isCreatingApp" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    <svg v-else class="w-4 h-4 text-[#B8752F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Perbarui Status Lamaran Sekarang</span>
+                    <span>Simpan Sebagai Lamaran Baru</span>
                   </button>
+                </div>
+
+                <!-- ACTION MODE 2: UPDATE STATUS LAMARAN YANG ADA -->
+                <div v-else class="space-y-3 p-3.5 bg-[#F9FAF8] border border-[#C8D0CC] rounded-xl shadow-2xs">
+                  <!-- Target Job Confirmation Dropdown if not matched -->
+                  <div>
+                    <label class="block text-xs font-semibold text-[#1C2B2A] mb-1">
+                      Pilih lamaran yang ingin diperbarui:
+                    </label>
+                    <select
+                      v-model="fallbackAppId"
+                      class="w-full text-xs px-3 py-2 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:ring-1 focus:ring-[#1C2B2A]"
+                    >
+                      <option :value="null">-- Pilih Salah Satu Lamaran Pekerjaan --</option>
+                      <option v-for="app in applications" :key="app.id" :value="app.id">
+                        {{ app.company_name }} - {{ app.position }} (Saat ini: {{ app.status }})
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-semibold text-[#1C2B2A] mb-1">
+                      Catatan yang akan ditambahkan ke logbook:
+                    </label>
+                    <textarea
+                      v-model="customNote"
+                      rows="2"
+                      class="w-full text-xs p-2.5 bg-white border border-[#C8D0CC] rounded-lg text-[#1C2B2A] focus:outline-none focus:ring-1 focus:ring-[#1C2B2A]"
+                    ></textarea>
+                  </div>
+
+                  <!-- Apply Update Button -->
+                  <div class="pt-1">
+                    <button
+                      type="button"
+                      @click="applyStatusUpdate"
+                      :disabled="isApplying || (!analysisResult.matched_application && !fallbackAppId)"
+                      class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-[#2E6F40] hover:bg-[#235832] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-xs transition-colors cursor-pointer"
+                    >
+                      <svg
+                        v-if="isApplying"
+                        class="w-4 h-4 animate-spin"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Perbarui Status Lamaran Sekarang</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -466,14 +588,23 @@
                       Perusahaan: {{ item.analysis.detected_company || 'Tidak terdeteksi' }}
                     </span>
 
-                    <button
-                      v-if="item.analysis.matched_application"
-                      type="button"
-                      @click="quickApplyGmailItem(item)"
-                      class="px-3 py-1 bg-[#2E6F40] hover:bg-[#235832] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
-                    >
-                      Update ke {{ item.analysis.status }}
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                      <button
+                        v-if="item.analysis.matched_application"
+                        type="button"
+                        @click="quickApplyGmailItem(item)"
+                        class="px-2.5 py-1 bg-[#2E6F40] hover:bg-[#235832] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer"
+                      >
+                        Update ke {{ item.analysis.status }}
+                      </button>
+                      <button
+                        type="button"
+                        @click="loadGmailItemIntoForm(item, 'create')"
+                        class="px-2.5 py-1 bg-[#1C2B2A] hover:bg-[#2B3E3C] text-white font-semibold text-[11px] rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <span>➕ Buat Baru</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -529,6 +660,15 @@ const isApplying = ref<boolean>(false);
 const analysisResult = ref<EmailParseResult | null>(null);
 const customNote = ref<string>('');
 const fallbackAppId = ref<number | null>(null);
+
+// Create new application states
+const actionMode = ref<'create' | 'update'>('create');
+const newAppCompany = ref<string>('');
+const newAppPosition = ref<string>('');
+const newAppStatus = ref<JobStatus>('applied');
+const newAppDate = ref<string>(new Date().toISOString().split('T')[0]);
+const newAppLocation = ref<string>('');
+const isCreatingApp = ref<boolean>(false);
 
 // Gmail states
 const gmailStatus = ref<GmailSyncStatus | null>(null);
@@ -656,14 +796,80 @@ const runAnalysis = async () => {
       analysisResult.value = res.data;
       customNote.value = res.data.suggested_note || '';
 
+      // Auto populate fields for new application creation
+      newAppCompany.value = res.data.detected_company || (res.data.matched_application?.company_name || '');
+      newAppPosition.value = res.data.detected_position || (res.data.matched_application?.position || '');
+      newAppStatus.value = res.data.status || 'applied';
+      newAppDate.value = new Date().toISOString().split('T')[0];
+
       if (res.data.matched_application) {
         fallbackAppId.value = res.data.matched_application.id;
+        actionMode.value = 'update';
+      } else {
+        fallbackAppId.value = null;
+        actionMode.value = 'create';
       }
     }
   } catch (err: any) {
     emit('show-toast', err.response?.data?.message || 'Gagal menganalisis email.', 'error');
   } finally {
     isAnalyzing.value = false;
+  }
+};
+
+const handleCreateApplication = async () => {
+  if (!newAppCompany.value.trim()) {
+    emit('show-toast', 'Nama perusahaan wajib diisi.', 'error');
+    return;
+  }
+  if (!newAppPosition.value.trim()) {
+    emit('show-toast', 'Posisi pekerjaan wajib diisi.', 'error');
+    return;
+  }
+
+  isCreatingApp.value = true;
+
+  try {
+    const res = await emailSyncApi.createApplication({
+      company_name: newAppCompany.value.trim(),
+      position: newAppPosition.value.trim(),
+      status: newAppStatus.value,
+      applied_date: newAppDate.value || new Date().toISOString().split('T')[0],
+      location: newAppLocation.value.trim() || undefined,
+      notes: customNote.value || undefined,
+      source: 'Email Scraping',
+    });
+
+    if (res.data) {
+      emit('applied', {
+        application: res.data,
+        message: res.message || 'Lamaran baru berhasil ditambahkan dari email!',
+      });
+      emit('show-toast', `Lamaran baru di ${res.data.company_name} berhasil dicatat!`, 'success');
+      closeModal();
+    }
+  } catch (err: any) {
+    emit('show-toast', err.response?.data?.message || 'Gagal menyimpan lamaran baru.', 'error');
+  } finally {
+    isCreatingApp.value = false;
+  }
+};
+
+const loadGmailItemIntoForm = (item: GmailScanResultItem, forceMode: 'create' | 'update' = 'create') => {
+  activeTab.value = 'paste';
+  emailSubject.value = item.subject || '';
+  emailSender.value = item.sender || '';
+  analysisResult.value = item.analysis;
+  customNote.value = item.analysis.suggested_note || '';
+
+  newAppCompany.value = item.analysis.detected_company || (item.analysis.matched_application?.company_name || '');
+  newAppPosition.value = item.analysis.detected_position || (item.analysis.matched_application?.position || '');
+  newAppStatus.value = item.analysis.status || 'applied';
+  newAppDate.value = new Date().toISOString().split('T')[0];
+
+  actionMode.value = forceMode;
+  if (item.analysis.matched_application) {
+    fallbackAppId.value = item.analysis.matched_application.id;
   }
 };
 

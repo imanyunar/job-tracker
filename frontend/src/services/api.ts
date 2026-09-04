@@ -195,6 +195,11 @@ export const emailSyncApi = {
     return response.data;
   },
 
+  async createApplication(data: JobFormPayload): Promise<ApiResponse<JobApplication>> {
+    const response = await apiClient.post<ApiResponse<JobApplication>>('/email-sync/create-application', data);
+    return response.data;
+  },
+
   async getGmailStatus(): Promise<ApiResponse<GmailSyncStatus>> {
     const response = await apiClient.get<ApiResponse<GmailSyncStatus>>('/email-sync/gmail/status');
     return response.data;

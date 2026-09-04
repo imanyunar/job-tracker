@@ -63,7 +63,13 @@ class EmailJobStatusParserService
             }
         }
 
-        // 4. Generate structured notes and action recommendation
+        // 4. Extract job position candidate
+        $detectedPosition = $this->extractPositionName($cleanSubject, $cleanContent);
+        if (empty($detectedPosition) && $matchedApplication) {
+            $detectedPosition = $matchedApplication->position;
+        }
+
+        // 5. Generate structured notes and action recommendation
         $newStatus = $statusClassification['status'];
         $currentStatus = $matchedApplication?->status ?? 'applied';
         $statusChanged = $matchedApplication ? ($matchedApplication->status !== $newStatus) : true;
@@ -85,6 +91,7 @@ class EmailJobStatusParserService
             'current_status' => $currentStatus,
             'status_changed' => $statusChanged,
             'detected_company' => $detectedCompany,
+            'detected_position' => $detectedPosition,
             'matched_application' => $matchedApplication ? [
                 'id' => $matchedApplication->id,
                 'company_name' => $matchedApplication->company_name,
@@ -534,5 +541,71 @@ class EmailJobStatusParserService
             'accepted' => 'Diterima',
             default => 'Applied (Terkirim)',
         };
+    }
+
+    /**
+     * Extract job position/role from subject or content.
+     */
+    public function extractPositionName(string $subject, string $content): ?string
+    {
+        // 1. From Subject with delimiters like " - Position" or ": Position"
+        $subjectPatterns = [
+            '/(?:application for|lamaran untuk|posisi|role|position|lowongan)\s*[:\-]?\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})/i',
+            '/(?:wawancara|interview|assessment|tes|seleksi(?:\s+online)?|offering|invitation)\s*[:\-]\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})/i',
+            '/(?:di|at|from)\s+[A-Za-z0-9\s\.\&]+?\s*[\-–:]\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})/i',
+            '/[\-–]\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})$/i',
+            '/:\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})$/i',
+        ];
+
+        foreach ($subjectPatterns as $pattern) {
+            if (preg_match($pattern, $subject, $matches)) {
+                $pos = trim($matches[1]);
+                $cleanPos = $this->cleanPositionCandidate($pos);
+                if (!empty($cleanPos)) {
+                    return $cleanPos;
+                }
+            }
+        }
+
+        // 2. From Content body with explicit position markers
+        $contentPatterns = [
+            '/(?:posisi|jabatan|role|position)\s*(?:yang anda lamar|pekerjaan)?\s*[:=\-]\s*([A-Za-z0-9\s\/\+\#\.\-_]{3,50})/i',
+            '/(?:(?:melamar|daftar)\s+)?(?:untuk\s+)?(?:posisi|jabatan|role|position)\s+([A-Za-z0-9\s\/\+\#\.\-_]{3,40}?)(?:\s+(?:di|at|pada|bersama|in|,|\.|\n|$))/i',
+            '/(?:applying for(?: the position of)?|application for(?: the position of)?)\s+([A-Za-z0-9\s\/\+\#\.\-_]{3,40}?)(?:\s+(?:at|in|,|\.|\n|$))/i',
+            '/(?:sebagai|as a|as an)\s+([A-Za-z0-9\s\/\+\#\.\-_]{3,40}?)(?:\s+(?:di|at|pada|bersama|in|,|\.|\n))/i',
+        ];
+
+        foreach ($contentPatterns as $pattern) {
+            if (preg_match($pattern, $content, $matches)) {
+                $pos = trim($matches[1]);
+                $cleanPos = $this->cleanPositionCandidate($pos);
+                if (!empty($cleanPos)) {
+                    return $cleanPos;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Sanitize and validate position name candidate.
+     */
+    protected function cleanPositionCandidate(string $candidate): ?string
+    {
+        $candidate = trim(preg_replace('/[,\.;:\-\(\)\[\]]+$/', '', $candidate));
+        $candidate = trim(preg_replace('/^(?:posisi|sebagai|role|position|for|lowongan)\s+/i', '', $candidate));
+
+        $invalidKeywords = [
+            'interview', 'wawancara', 'tahap', 'online', 'test', 'jadwal',
+            'invitation', 'undangan', 'hasil', 'kami', 'anda', 'terima kasih',
+            'perusahaan', 'hrd', 'recruitment', 'application', 'status'
+        ];
+
+        if (in_array(strtolower($candidate), $invalidKeywords, true) || strlen($candidate) < 3 || strlen($candidate) > 60) {
+            return null;
+        }
+
+        return ucwords(strtolower($candidate));
     }
 }

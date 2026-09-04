@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('email-sync')->group(function () {
         Route::post('/parse', [EmailSyncController::class, 'parseEmail']);
         Route::post('/apply', [EmailSyncController::class, 'applyUpdate']);
+        Route::post('/create-application', [EmailSyncController::class, 'createApplication']);
         Route::get('/gmail/status', [EmailSyncController::class, 'getGmailStatus']);
         Route::get('/gmail/redirect', [EmailSyncController::class, 'googleRedirect']);
         Route::post('/gmail/disconnect', [EmailSyncController::class, 'disconnectGmail']);

@@ -165,6 +165,7 @@ export interface EmailParseResult {
   current_status: JobStatus;
   status_changed: boolean;
   detected_company?: string | null;
+  detected_position?: string | null;
   matched_application?: {
     id: number;
     company_name: string;
