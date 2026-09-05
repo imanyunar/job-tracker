@@ -87,6 +87,12 @@ class AuthController extends Controller
      */
     public function linkedinRedirect(): RedirectResponse|JsonResponse
     {
+        $frontendUrl = rtrim(env('FRONTEND_URL', env('APP_URL', 'https://job-tracker.anythingforlove.my.id')), '/');
+
+        if (empty(config('services.linkedin-openid.client_id')) || empty(config('services.linkedin-openid.client_secret'))) {
+            return redirect("{$frontendUrl}/?error=" . urlencode('Login dengan LinkedIn belum dikonfigurasi di server. Silakan masuk menggunakan Email dan Password Anda.'));
+        }
+
         try {
             /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
             $driver = Socialite::driver('linkedin-openid')
